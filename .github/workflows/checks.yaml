@@ -1,0 +1,58 @@
+name: "Checks"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  merge_group:
+    branches:
+      - main
+    types:
+      - checks_requested
+
+permissions:
+  contents: read
+
+jobs:
+  pr:
+    name: Validate PR title
+    if: contains(fromJSON('["pull_request", "pull_request_target"]'), github.event_name)
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@e9fabac35e210fea40ca5b14c0da95a099eff26f
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  mavenverify:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - pr
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - name: Set up JDK
+        uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
+        with:
+          java-version: "20"
+          distribution: "temurin"
+          server-id: github
+      - name: Maven Verify
+        run: |
+          mvn --batch-mode clean install -DskipTests
+          mvn --batch-mode verify
+
+
+  ci:
+    needs:
+      - mavenverify
+      - pr
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - if: contains(needs.*.result, 'failure')
+        run: echo "Failed due to ${{ contains(needs.*.result, 'failure') }}" && exit 1

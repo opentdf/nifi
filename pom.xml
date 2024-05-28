@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.opentdf.nifi</groupId>
+    <artifactId>sdk-pom</artifactId>
+    <version>0.1.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
+    <name>nifi-pom</name>
+    <packaging>pom</packaging>
+    <description>NiFi processors for OpenTDF</description>
+    <properties>
+        <nifi.version>1.23.1</nifi.version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-api</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-utils</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-mock</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <profiles>
+        <profile>
+            <id>ghcr</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>ghcr</name>
+                    <url>https://maven.pkg.github.com/opentdf/nifi</url>
+                </repository>
+                <snapshotRepository>
+                    <id>github</id>
+                    <name>ghcr</name>
+                    <url>https://maven.pkg.github.com/opentdf/nifi</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+    </profiles>
+</project>
