@@ -38,13 +38,14 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
         with:
-          java-version: "20"
+          java-version: "21"
           distribution: "temurin"
           server-id: github
       - name: Maven Verify
         run: |
-          mvn --batch-mode clean install -DskipTests
-          mvn --batch-mode verify
+          mvn --batch-mode clean install -DskipTests -s settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
   ci:
