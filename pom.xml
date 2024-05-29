@@ -10,6 +10,12 @@
     <name>nifi-pom</name>
     <packaging>pom</packaging>
     <description>NiFi processors for OpenTDF</description>
+    <licenses>
+        <license>
+            <name>Clear BSD License</name>
+            <url>https://github.com/opentdf/nifi/blob/main/LICENSE</url>
+        </license>
+    </licenses>
     <properties>
         <nifi.version>1.23.1</nifi.version>
         <junit.version>5.10.0</junit.version>
