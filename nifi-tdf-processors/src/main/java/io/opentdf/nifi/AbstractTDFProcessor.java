@@ -104,7 +104,7 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
     }
 
     //this is really here to allow for easier mocking for testing
-    SDKBuilder createSDKBuilder(){
+    SDKBuilder createSDKBuilder() {
         return SDKBuilder.newBuilder();
     }
 

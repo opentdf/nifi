@@ -46,6 +46,7 @@ class ConvertToTDFTest {
         runner.enableControllerService(tdfControllerService);
         runner.assertValid(tdfControllerService);
         runner.setProperty(OPENTDF_CONFIG_SERVICE.getName(), OPENTDF_CONFIG_SERVICE.getName());
+
     }
 
     @Test

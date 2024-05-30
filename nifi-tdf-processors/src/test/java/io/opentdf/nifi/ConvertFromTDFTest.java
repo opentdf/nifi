@@ -3,8 +3,9 @@ package io.opentdf.nifi;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.SDKBuilder;
 import io.opentdf.platform.sdk.TDF;
+import nl.altindag.ssl.util.KeyStoreUtils;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
-import org.apache.nifi.processor.ProcessContext;
+import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
@@ -12,8 +13,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +27,6 @@ import static io.opentdf.nifi.AbstractTDFProcessor.OPENTDF_CONFIG_SERVICE;
 import static io.opentdf.nifi.SimpleOpenTDFControllerService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
 
 
 class ConvertFromTDFTest {
@@ -56,6 +60,25 @@ class ConvertFromTDFTest {
         ((MockRunner) runner.getProcessor()).mockTDF = mockTDF;
         ((MockRunner) runner.getProcessor()).mockSDKBuilder = mockSDKBuilder;
         setupTDFControllerService(runner);
+
+        //add ssl context
+        SSLContextService sslContextService = mock(SSLContextService.class);
+        File trustStoreFile = Files.createTempFile("trust", "jks").toFile();
+        final String TRUST_STORE_PATH = trustStoreFile.getAbsolutePath();
+        final String TRUST_STORE_PASSWORD = "foo";
+        when(sslContextService.validate(any())).thenReturn(Collections.emptyList());
+        when(sslContextService.getTrustStoreFile()).thenReturn(TRUST_STORE_PATH);
+        when(sslContextService.getTrustStorePassword()).thenReturn(TRUST_STORE_PASSWORD);
+
+        try (FileOutputStream fos = new FileOutputStream(trustStoreFile)) {
+            KeyStoreUtils.createKeyStore().store(fos, TRUST_STORE_PASSWORD.toCharArray());
+        }
+        when(sslContextService.getIdentifier()).thenReturn(AbstractTDFProcessor.SSL_CONTEXT_SERVICE.getName());
+        runner.addControllerService(AbstractTDFProcessor.SSL_CONTEXT_SERVICE.getName(), sslContextService, new HashMap<>());
+        runner.enableControllerService(sslContextService);
+        runner.setProperty(AbstractTDFProcessor.SSL_CONTEXT_SERVICE, AbstractTDFProcessor.SSL_CONTEXT_SERVICE.getName());
+
+
         runner.assertValid();
 
         SDK.Services mockServices = mock(SDK.Services.class);
@@ -64,6 +87,7 @@ class ConvertFromTDFTest {
         when(mockServices.kas()).thenReturn(mockKAS);
         when(mockSDKBuilder.platformEndpoint("http://platform")).thenReturn(mockSDKBuilder);
         when(mockSDKBuilder.clientSecret("my-client", "123-456")).thenReturn(mockSDKBuilder);
+        when(mockSDKBuilder.sslFactoryFromKeyStore(TRUST_STORE_PATH, TRUST_STORE_PASSWORD)).thenReturn(mockSDKBuilder);
         when(mockSDKBuilder.build()).thenReturn(mockSDK);
 
         ArgumentCaptor<SeekableByteChannel> seekableByteChannelArgumentCaptor = ArgumentCaptor.forClass(SeekableByteChannel.class);
@@ -97,12 +121,13 @@ class ConvertFromTDFTest {
     public static class MockRunner extends ConvertFromTDF {
         TDF mockTDF;
         SDKBuilder mockSDKBuilder;
+
         @Override
-        SDKBuilder createSDKBuilder(){
+        SDKBuilder createSDKBuilder() {
             return mockSDKBuilder;
         }
 
-       @Override
+        @Override
         TDF getTDF() {
             return mockTDF;
         }
