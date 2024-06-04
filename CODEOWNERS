@@ -1,6 +1,6 @@
 # CODEOWNERS
 
-* @opentdf/nifi-processors @opentdf/architecture
+* @opentdf/nifi @opentdf/architecture
 
 ## High Security Area
 
