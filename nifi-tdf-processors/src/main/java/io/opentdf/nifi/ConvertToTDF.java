@@ -79,7 +79,7 @@ public class ConvertToTDF extends AbstractTDFProcessor {
                                         @Override
                                         public void process(InputStream inputStream, OutputStream outputStream) throws IOException {
                                             try {
-                                                getTDF().createTDF(inputStream, size, outputStream, config, sdk.getServices().kas());
+                                                getTDF().createTDF(inputStream, outputStream, config, sdk.getServices().kas());
                                             } catch (Exception e) {
                                                 getLogger().error("error creating tdf", e);
                                                 throw new IOException(e);

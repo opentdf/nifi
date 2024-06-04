@@ -3,7 +3,8 @@ package io.opentdf.nifi;
 import io.opentdf.platform.sdk.Config;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.TDF;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
@@ -67,16 +68,13 @@ class ConvertToTDFTest {
         ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
         ArgumentCaptor<Config.TDFConfig> configArgumentCaptor = ArgumentCaptor.forClass(Config.TDFConfig.class);
-        ArgumentCaptor<Long> sizeCapture = ArgumentCaptor.forClass(Long.class);
 
         doAnswer(invocationOnMock -> {
             InputStream inputStream = invocationOnMock.getArgument(0);
-            long size = invocationOnMock.getArgument(1);
-            OutputStream outputStream = invocationOnMock.getArgument(2);
-            Config.TDFConfig config = invocationOnMock.getArgument(3);
-            SDK.KAS kas = invocationOnMock.getArgument(4);
-            byte[] b = new byte[(int) size];
-            IOUtils.readFully(inputStream, b);
+            OutputStream outputStream = invocationOnMock.getArgument(1);
+            Config.TDFConfig config = invocationOnMock.getArgument(2);
+            SDK.KAS kas = invocationOnMock.getArgument(3);
+            byte[] b = IOUtils.toByteArray(inputStream);
             outputStream.write(("TDF:" + new String(b)).getBytes());
             assertNotNull(kas, "KAS is not null");
             assertSame(mockKAS, kas, "Expected KAS passed in");
@@ -89,7 +87,6 @@ class ConvertToTDFTest {
             }
             return null;
         }).when(mockTDF).createTDF(inputStreamArgumentCaptor.capture(),
-                sizeCapture.capture(),
                 outputStreamArgumentCaptor.capture(),
                 configArgumentCaptor.capture(),
                 kasArgumentCaptor.capture());

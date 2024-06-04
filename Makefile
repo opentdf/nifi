@@ -6,6 +6,11 @@ compose-package: nar-build
 	cp nifi-tdf-nar/target/*.nar deploy/extensions
 	cp nifi-tdf-controller-services-api-nar/target/*.nar deploy/extensions
 
+.PHONY: truststore-create
+truststore-create:
+	@echo "Build Truststore from *.crt in ./deploy/truststore"
+	cd ./deploy && ./build_truststore.sh
+
 .PHONY: nar-build
 nar-build:
 	@echo "Build NARs"
