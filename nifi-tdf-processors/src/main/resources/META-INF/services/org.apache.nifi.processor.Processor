@@ -1,2 +1,2 @@
-io.opentdf.nifi.ConvertFromTDF
-io.opentdf.nifi.ConvertToTDF
+io.opentdf.nifi.ConvertFromZTDF
+io.opentdf.nifi.ConvertToZTDF

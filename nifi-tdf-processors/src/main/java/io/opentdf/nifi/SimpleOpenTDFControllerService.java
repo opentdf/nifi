@@ -15,7 +15,7 @@ import org.apache.nifi.reporting.InitializationException;
 import java.util.Arrays;
 import java.util.List;
 
-@Tags({"TDF", "OpenTDF", "Configuration"})
+@Tags({"TDF", "ZTDF", "OpenTDF", "Configuration"})
 @CapabilityDescription("Provides An implementation of the OpenTDFControllerService API for OpenTDF SDK Configuration Parameters")
 public class SimpleOpenTDFControllerService extends AbstractControllerService implements OpenTDFControllerService {
 

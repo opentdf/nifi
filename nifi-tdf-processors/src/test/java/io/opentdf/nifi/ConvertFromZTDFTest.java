@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
-class ConvertFromTDFTest {
+class ConvertFromZTDFTest {
 
     SDK mockSDK;
     TDF mockTDF;
@@ -109,7 +109,7 @@ class ConvertFromTDFTest {
         MockFlowFile messageTwo = runner.enqueue("message two".getBytes());
         runner.run(1);
         List<MockFlowFile> flowFileList =
-                runner.getFlowFilesForRelationship(ConvertFromTDF.REL_SUCCESS);
+                runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
         assertEquals(2, flowFileList.size(), "Two successful flow files");
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageOne.getAttribute("filename")))
                 .filter(x -> x.getContent().equals("Decrypted:message one")).count());
@@ -118,7 +118,7 @@ class ConvertFromTDFTest {
 
     }
 
-    public static class MockRunner extends ConvertFromTDF {
+    public static class MockRunner extends ConvertFromZTDF {
         TDF mockTDF;
         SDKBuilder mockSDKBuilder;
 

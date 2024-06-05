@@ -18,9 +18,9 @@ import java.util.Collections;
 import java.util.List;
 
 
-@CapabilityDescription("Decrypts TDF flow file content")
-@Tags({"TDF", "OpenTDF", "Decrypt", "Data Centric Security"})
-public class ConvertFromTDF extends AbstractTDFProcessor {
+@CapabilityDescription("Decrypts ZTDF flow file content")
+@Tags({"ZTDF", "Zero Trust Data Format", "OpenTDF", "Decrypt", "Data Centric Security"})
+public class ConvertFromZTDF extends AbstractTDFProcessor {
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -40,7 +40,7 @@ public class ConvertFromTDF extends AbstractTDFProcessor {
                             try {
                                 getTDF().loadTDF(seekableByteChannel, outputStream, sdk.getServices().kas());
                             } catch (Exception e) {
-                                getLogger().error("error decrypting tdf", e);
+                                getLogger().error("error decrypting ZTDF", e);
                                 throw new IOException(e);
                             }
                         });

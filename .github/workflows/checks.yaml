@@ -43,7 +43,7 @@ jobs:
           server-id: github
       - name: Maven Verify
         run: |
-          mvn --batch-mode clean install -DskipTests -s settings.xml
+          mvn --batch-mode clean install -s settings.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
