@@ -1,7 +1,6 @@
 package io.opentdf.nifi;
 
 import io.opentdf.platform.sdk.SDK;
-import io.opentdf.platform.sdk.TDF;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
@@ -23,38 +22,25 @@ import java.util.List;
 public class ConvertFromZTDF extends AbstractTDFProcessor {
 
     @Override
-    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return Collections.unmodifiableList(Arrays.asList(SSL_CONTEXT_SERVICE, OPENTDF_CONFIG_SERVICE, FLOWFILE_PULL_SIZE));
-    }
-
-
-    @Override
-    public void onTrigger(ProcessContext processContext, ProcessSession processSession) throws ProcessException {
-        List<FlowFile> flowFiles = processSession.get(processContext.getProperty(FLOWFILE_PULL_SIZE).asInteger());
-        if (!flowFiles.isEmpty()) {
-            SDK sdk = getTDFSDK(processContext);
-            for (FlowFile flowFile : flowFiles) {
-                try {
-                    try (SeekableByteChannel seekableByteChannel = new SeekableInMemoryByteChannel(readEntireFlowFile(flowFile, processSession))) {
-                        FlowFile updatedFlowFile = processSession.write(flowFile, outputStream -> {
-                            try {
-                                getTDF().loadTDF(seekableByteChannel, outputStream, sdk.getServices().kas());
-                            } catch (Exception e) {
-                                getLogger().error("error decrypting ZTDF", e);
-                                throw new IOException(e);
-                            }
-                        });
-                        processSession.transfer(updatedFlowFile, REL_SUCCESS);
-                    }
-                } catch (Exception e) {
-                    getLogger().error(flowFile.getId() + ": error decrypting flowfile", e);
-                    processSession.transfer(flowFile, REL_FAILURE);
+    void processFlowFiles(ProcessContext processContext, ProcessSession processSession, List<FlowFile> flowFiles) throws ProcessException {
+        SDK sdk = getTDFSDK(processContext);
+        for (FlowFile flowFile : flowFiles) {
+            try {
+                try (SeekableByteChannel seekableByteChannel = new SeekableInMemoryByteChannel(readEntireFlowFile(flowFile, processSession))) {
+                    FlowFile updatedFlowFile = processSession.write(flowFile, outputStream -> {
+                        try {
+                            getTDF().loadTDF(seekableByteChannel, outputStream, sdk.getServices().kas());
+                        } catch (Exception e) {
+                            getLogger().error("error decrypting ZTDF", e);
+                            throw new IOException(e);
+                        }
+                    });
+                    processSession.transfer(updatedFlowFile, REL_SUCCESS);
                 }
+            } catch (Exception e) {
+                getLogger().error(flowFile.getId() + ": error decrypting flowfile", e);
+                processSession.transfer(flowFile, REL_FAILURE);
             }
         }
-    }
-
-    TDF getTDF() {
-        return new TDF();
     }
 }

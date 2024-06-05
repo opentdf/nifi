@@ -1,9 +1,8 @@
 package io.opentdf.nifi;
 
 import io.opentdf.platform.sdk.Config;
+import io.opentdf.platform.sdk.NanoTDF;
 import io.opentdf.platform.sdk.SDK;
-import io.opentdf.platform.sdk.TDF;
-import org.apache.commons.io.IOUtils;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
@@ -12,34 +11,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.opentdf.nifi.AbstractTDFProcessor.OPENTDF_CONFIG_SERVICE;
-import static io.opentdf.nifi.SimpleOpenTDFControllerService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ConvertToZTDFTest {
-
+class ConvertToNanoTDFTest {
     SDK mockSDK;
-    TDF mockTDF;
+    NanoTDF mockNanoTDF;
 
     @BeforeEach
     void setup() {
         mockSDK = mock(SDK.class);
-        mockTDF = mock(TDF.class);
+        mockNanoTDF = mock(NanoTDF.class);
     }
 
     @Test
-    public void testToTDF() throws Exception {
-        TestRunner runner = TestRunners.newTestRunner(MockRunner.class);
+    void testToNano() throws Exception {
+        TestRunner runner = TestRunners.newTestRunner(ConvertToNanoTDFTest.MockRunner.class);
         ((MockRunner) runner.getProcessor()).mockSDK = mockSDK;
-        ((MockRunner) runner.getProcessor()).mockTDF = mockTDF;
+        ((MockRunner) runner.getProcessor()).mockNanoTDF = mockNanoTDF;
         runner.setProperty(ConvertToZTDF.KAS_URL, "https://kas1");
         Utils.setupTDFControllerService(runner);
         runner.assertValid();
@@ -49,17 +44,17 @@ class ConvertToZTDFTest {
         when(mockSDK.getServices()).thenReturn(mockServices);
         when(mockServices.kas()).thenReturn(mockKAS);
 
-        ArgumentCaptor<InputStream> inputStreamArgumentCaptor = ArgumentCaptor.forClass(InputStream.class);
+        ArgumentCaptor<ByteBuffer> byteBufferArgumentCaptor = ArgumentCaptor.forClass(ByteBuffer.class);
         ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
-        ArgumentCaptor<Config.TDFConfig> configArgumentCaptor = ArgumentCaptor.forClass(Config.TDFConfig.class);
+        ArgumentCaptor<Config.NanoTDFConfig> configArgumentCaptor = ArgumentCaptor.forClass(Config.NanoTDFConfig.class);
 
         doAnswer(invocationOnMock -> {
-            InputStream inputStream = invocationOnMock.getArgument(0);
+            ByteBuffer byteBuffer = invocationOnMock.getArgument(0);
             OutputStream outputStream = invocationOnMock.getArgument(1);
-            Config.TDFConfig config = invocationOnMock.getArgument(2);
+            Config.NanoTDFConfig config = invocationOnMock.getArgument(2);
             SDK.KAS kas = invocationOnMock.getArgument(3);
-            byte[] b = IOUtils.toByteArray(inputStream);
+            byte[] b = byteBuffer.array();
             outputStream.write(("TDF:" + new String(b)).getBytes());
             assertNotNull(kas, "KAS is not null");
             assertSame(mockKAS, kas, "Expected KAS passed in");
@@ -71,7 +66,7 @@ class ConvertToZTDFTest {
                 assertTrue(config.attributes.contains("https://example.org/attr/one/value/c"));
             }
             return null;
-        }).when(mockTDF).createTDF(inputStreamArgumentCaptor.capture(),
+        }).when(mockNanoTDF).createNanoTDF(byteBufferArgumentCaptor.capture(),
                 outputStreamArgumentCaptor.capture(),
                 configArgumentCaptor.capture(),
                 kasArgumentCaptor.capture());
@@ -79,14 +74,21 @@ class ConvertToZTDFTest {
         //message one has no attribute
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
         //message two has attributes
-        MockFlowFile messageTwo = runner.enqueue("message two".getBytes(), Map.of(ConvertToZTDF.TDF_ATTRIBUTE,
+        MockFlowFile messageTwo = runner.enqueue("message two".getBytes(), Map.of(ConvertToNanoTDF.TDF_ATTRIBUTE,
                 "https://example.org/attr/one/value/a,https://example.org/attr/one/value/b"));
         //message three has attributes and kas url override
-        MockFlowFile messageThree = runner.enqueue("message three".getBytes(), Map.of(ConvertToZTDF.TDF_ATTRIBUTE,
-                "https://example.org/attr/one/value/c", ConvertToZTDF.KAS_URL_ATTRIBUTE, "https://kas2"));
+        MockFlowFile messageThree = runner.enqueue("message three".getBytes(), Map.of(ConvertToNanoTDF.TDF_ATTRIBUTE,
+                "https://example.org/attr/one/value/c", ConvertToNanoTDF.KAS_URL_ATTRIBUTE, "https://kas2"));
+
+        //message four has content length > max length
+        char[] chars = new char[(int) (ConvertToNanoTDF.MAX_SIZE + 10)];
+        Arrays.fill(chars, 'a');
+        MockFlowFile messageFour = runner.enqueue(new String(chars).getBytes(), Map.of(ConvertToNanoTDF.TDF_ATTRIBUTE,
+                "https://example.org/attr/one/value/c", ConvertToNanoTDF.KAS_URL_ATTRIBUTE, "https://kas2"));
+
         runner.run(1);
         List<MockFlowFile> flowFileList =
-                runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
+                runner.getFlowFilesForRelationship(ConvertToNanoTDF.REL_SUCCESS);
         assertEquals(2, flowFileList.size(), "Two flowfiles for success relationship");
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageTwo.getAttribute("filename")))
                 .filter(x -> x.getContent().equals("TDF:message two")).count());
@@ -95,15 +97,21 @@ class ConvertToZTDFTest {
 
 
         flowFileList =
-                runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_FAILURE);
+                runner.getFlowFilesForRelationship(ConvertToNanoTDF.REL_FAILURE);
         assertEquals(1, flowFileList.size(), "One flowfile for failure relationship");
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageOne.getAttribute("filename")))
                 .filter(x -> x.getContent().equals("message one")).count());
+
+        flowFileList =
+                runner.getFlowFilesForRelationship(ConvertToNanoTDF.REL_FLOWFILE_EXCEEDS_NANO_SIZE);
+        assertEquals(1, flowFileList.size(), "One flowfile for failure exceeds");
+        assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename")
+                .equals(messageFour.getAttribute("filename"))).count());
     }
 
-    public static class MockRunner extends ConvertToZTDF {
+    public static class MockRunner extends ConvertToNanoTDF {
         SDK mockSDK;
-        TDF mockTDF;
+        NanoTDF mockNanoTDF;
 
         @Override
         SDK getTDFSDK(ProcessContext processContext) {
@@ -111,10 +119,8 @@ class ConvertToZTDFTest {
         }
 
         @Override
-        TDF getTDF() {
-            return mockTDF;
+        NanoTDF getNanoTDF() {
+            return mockNanoTDF;
         }
     }
-
-
 }
