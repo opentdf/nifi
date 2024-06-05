@@ -13,7 +13,7 @@ Components:
 
 ```mermaid
 ---
-title: Generic Plaintext to TDF NiFi Flow
+title: Generic Plaintext to ZTDF NiFi Flow
 ---
 flowchart TD
    a[FlowFile: \nPlaintext content]
