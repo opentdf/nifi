@@ -1,0 +1,17 @@
+version: '3'
+services:
+  opentdf-nifi:
+    image: ghcr.io/ttschampel/nifi/nifi-1.25.0-jre17:latest
+    restart: always
+    ulimits:
+      nofile:
+        soft: 2048
+        hard: 4096
+    environment:
+      - NIFI_WEB_HTTP_PORT=8080
+    volumes:
+      - ./deploy/extensions:/opt/nifi/nifi-current/extensions #mount custom NARs
+      - ./deploy/truststore:/opt/nifi/nifi-current/truststore # mounts truststore
+      - ./deploy/custom-libs:/opt/nifi/nifi-current/custom-libs #mount additional libs
+    ports:
+      - 18080:8080/tcp

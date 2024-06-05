@@ -1,0 +1,8 @@
+# CODEOWNERS
+
+* @opentdf/nifi @opentdf/architecture
+
+## High Security Area
+
+CODEOWNERS     @opentdf/architecture @opentdf/security
+LICENSE        @opentdf/architecture
