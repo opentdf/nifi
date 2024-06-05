@@ -15,7 +15,7 @@ Components:
 ---
 title: Generic Plaintext to TDF NiFi Flow
 ---
-flowchart LR
+flowchart TD
    a[FlowFile: \nPlaintext content]
    b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
    c["`**ConvertToZTDF**`"]
@@ -32,7 +32,7 @@ flowchart LR
 ---
 title: Generic ZTDF to Plaintext Nifi Flow
 ---
-flowchart LR
+flowchart TD
    a[FlowFile: \nZTDF content]
    b["`**ConvertFromZTDF**`"]
    c["Process ZTDF"]
