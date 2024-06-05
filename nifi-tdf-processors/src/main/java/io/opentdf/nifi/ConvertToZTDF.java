@@ -26,15 +26,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CapabilityDescription("Transforms flow file content into a TDF")
-@Tags({"TDF", "OpenTDF", "Encrypt", "Data Centric Security"})
+@CapabilityDescription("Transforms flow file content into a ZTDF")
+@Tags({"ZTDF", "OpenTDF", "Zero Trust Data Format", "Encrypt", "Data Centric Security"})
 @ReadsAttributes(value = {
         @ReadsAttribute(attribute = "kas_url", description = "The Key Access Server (KAS) URL used TDF Creation. This overrides " +
                 "the KAS URL property of this processor."),
         @ReadsAttribute(attribute = "tdf_attribute", description = "A comma separated list of data attributes added " +
                 "to created TDF Data Policy. e.g. http://example.org/attr/foo/value/bar,http://example.org/attr/foo/value/bar2")
 })
-public class ConvertToTDF extends AbstractTDFProcessor {
+public class ConvertToZTDF extends AbstractTDFProcessor {
     static final String KAS_URL_ATTRIBUTE = "kas_url";
     static final String TDF_ATTRIBUTE = "tdf_attribute";
 
