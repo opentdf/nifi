@@ -144,6 +144,8 @@
                     <configuration>
                         <!--When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0 or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.-->
                         <forkCount>0</forkCount>
+                        <!-- this is required for test coverage-->
+                        <argLine>${argLine}</argLine>
                     </configuration>
                 </plugin>
             </plugins>
