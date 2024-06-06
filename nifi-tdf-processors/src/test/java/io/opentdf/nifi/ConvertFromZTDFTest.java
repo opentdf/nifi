@@ -3,7 +3,9 @@ package io.opentdf.nifi;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.SDKBuilder;
 import io.opentdf.platform.sdk.TDF;
+import io.opentdf.platform.sdk.TDF.Reader;
 import nl.altindag.ssl.util.KeyStoreUtils;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.util.MockFlowFile;
@@ -16,15 +18,12 @@ import org.mockito.ArgumentCaptor;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.opentdf.nifi.AbstractTDFProcessor.OPENTDF_CONFIG_SERVICE;
-import static io.opentdf.nifi.SimpleOpenTDFControllerService.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -78,19 +77,29 @@ class ConvertFromZTDFTest {
         when(mockSDKBuilder.build()).thenReturn(mockSDK);
 
         ArgumentCaptor<SeekableByteChannel> seekableByteChannelArgumentCaptor = ArgumentCaptor.forClass(SeekableByteChannel.class);
-        ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
 
+        Reader mockReader = mock(Reader.class);
+
+        ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
+        List<String> messages = new ArrayList<>();
+
+        final AtomicInteger ai = new AtomicInteger(0);
+        doAnswer(invocationOnMock -> {
+            OutputStream outputStream = invocationOnMock.getArgument(0);
+            outputStream.write(("Decrypted: Decrypted message " + ai.incrementAndGet()).getBytes());
+            return  null;
+        }).when(mockReader).readPayload(outputStreamArgumentCaptor.capture());
         doAnswer(invocationOnMock -> {
             SeekableInMemoryByteChannel seekableByteChannel = invocationOnMock.getArgument(0);
-            OutputStream outputStream = invocationOnMock.getArgument(1);
-            SDK.KAS kas = invocationOnMock.getArgument(2);
-            outputStream.write(("Decrypted:" + new String(seekableByteChannel.array())).getBytes());
+            ByteBuffer bb = ByteBuffer.allocate((int)seekableByteChannel.size());
+            seekableByteChannel.read(bb);
+            messages.add(new String(bb.array()));
+            SDK.KAS kas = invocationOnMock.getArgument(1);
             assertNotNull(kas, "KAS is not null");
             assertSame(mockKAS, kas, "Expected KAS passed in");
-            return null;
+            return mockReader;
         }).when(mockTDF).loadTDF(seekableByteChannelArgumentCaptor.capture(),
-                outputStreamArgumentCaptor.capture(),
                 kasArgumentCaptor.capture());
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
         MockFlowFile messageTwo = runner.enqueue("message two".getBytes());
@@ -99,10 +108,13 @@ class ConvertFromZTDFTest {
                 runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
         assertEquals(2, flowFileList.size(), "Two successful flow files");
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageOne.getAttribute("filename")))
-                .filter(x -> x.getContent().equals("Decrypted:message one")).count());
+                .filter(x -> x.getContent().equals("Decrypted: Decrypted message 1")).count());
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageTwo.getAttribute("filename")))
-                .filter(x -> x.getContent().equals("Decrypted:message two")).count());
+                .filter(x -> x.getContent().equals("Decrypted: Decrypted message 2")).count());
+        assertEquals(2, seekableByteChannelArgumentCaptor.getAllValues().size());
 
+        assertTrue(messages.contains("message one"));
+        assertTrue(messages.contains("message two"));
     }
 
     public static class MockRunner extends ConvertFromZTDF {
