@@ -1,12 +1,9 @@
 package io.opentdf.nifi;
 
+import io.opentdf.platform.sdk.NanoTDF;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.SDKBuilder;
-import io.opentdf.platform.sdk.TDF;
-import io.opentdf.platform.sdk.TDF.Reader;
 import nl.altindag.ssl.util.KeyStoreUtils;
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
@@ -19,31 +16,31 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-
-class ConvertFromZTDFTest {
+class ConvertFromNanoTDFTest {
 
     SDK mockSDK;
-    TDF mockTDF;
+    NanoTDF mockNanoTDF;
 
     @BeforeEach
     void setup() {
         mockSDK = mock(SDK.class);
-        mockTDF = mock(TDF.class);
+        mockNanoTDF = mock(NanoTDF.class);
     }
 
     @Test
     public void testConvertFromTDF() throws Exception {
         TestRunner runner = TestRunners.newTestRunner(MockRunner.class);
         SDKBuilder mockSDKBuilder = mock(SDKBuilder.class);
-        ((MockRunner) runner.getProcessor()).mockTDF = mockTDF;
+        ((MockRunner) runner.getProcessor()).mockNanoTDF = mockNanoTDF;
         ((MockRunner) runner.getProcessor()).mockSDKBuilder = mockSDKBuilder;
         Utils.setupTDFControllerService(runner);
 
@@ -76,49 +73,36 @@ class ConvertFromZTDFTest {
         when(mockSDKBuilder.sslFactoryFromKeyStore(TRUST_STORE_PATH, TRUST_STORE_PASSWORD)).thenReturn(mockSDKBuilder);
         when(mockSDKBuilder.build()).thenReturn(mockSDK);
 
-        ArgumentCaptor<SeekableByteChannel> seekableByteChannelArgumentCaptor = ArgumentCaptor.forClass(SeekableByteChannel.class);
+        ArgumentCaptor<ByteBuffer> byteBufferCapture = ArgumentCaptor.forClass(ByteBuffer.class);
+        ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
 
-        Reader mockReader = mock(Reader.class);
-
-        ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
-        List<String> messages = new ArrayList<>();
-
-        final AtomicInteger ai = new AtomicInteger(0);
         doAnswer(invocationOnMock -> {
-            OutputStream outputStream = invocationOnMock.getArgument(0);
-            outputStream.write(("Decrypted: Decrypted message " + ai.incrementAndGet()).getBytes());
-            return  null;
-        }).when(mockReader).readPayload(outputStreamArgumentCaptor.capture());
-        doAnswer(invocationOnMock -> {
-            SeekableInMemoryByteChannel seekableByteChannel = invocationOnMock.getArgument(0);
-            ByteBuffer bb = ByteBuffer.allocate((int)seekableByteChannel.size());
-            seekableByteChannel.read(bb);
-            messages.add(new String(bb.array()));
-            SDK.KAS kas = invocationOnMock.getArgument(1);
+            ByteBuffer byteBuffer = invocationOnMock.getArgument(0);
+            OutputStream outputStream = invocationOnMock.getArgument(1);
+            SDK.KAS kas = invocationOnMock.getArgument(2);
+            outputStream.write(("Decrypted:" + new String(byteBuffer.array())).getBytes());
             assertNotNull(kas, "KAS is not null");
             assertSame(mockKAS, kas, "Expected KAS passed in");
-            return mockReader;
-        }).when(mockTDF).loadTDF(seekableByteChannelArgumentCaptor.capture(),
+            return null;
+        }).when(mockNanoTDF).readNanoTDF(byteBufferCapture.capture(),
+                outputStreamArgumentCaptor.capture(),
                 kasArgumentCaptor.capture());
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
         MockFlowFile messageTwo = runner.enqueue("message two".getBytes());
         runner.run(1);
         List<MockFlowFile> flowFileList =
-                runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
+                runner.getFlowFilesForRelationship(ConvertFromNanoTDF.REL_SUCCESS);
         assertEquals(2, flowFileList.size(), "Two successful flow files");
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageOne.getAttribute("filename")))
-                .filter(x -> x.getContent().equals("Decrypted: Decrypted message 1")).count());
+                .filter(x -> x.getContent().equals("Decrypted:message one")).count());
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageTwo.getAttribute("filename")))
-                .filter(x -> x.getContent().equals("Decrypted: Decrypted message 2")).count());
-        assertEquals(2, seekableByteChannelArgumentCaptor.getAllValues().size());
+                .filter(x -> x.getContent().equals("Decrypted:message two")).count());
 
-        assertTrue(messages.contains("message one"));
-        assertTrue(messages.contains("message two"));
     }
 
-    public static class MockRunner extends ConvertFromZTDF {
-        TDF mockTDF;
+    public static class MockRunner extends ConvertFromNanoTDF {
+        NanoTDF mockNanoTDF;
         SDKBuilder mockSDKBuilder;
 
         @Override
@@ -127,8 +111,8 @@ class ConvertFromZTDFTest {
         }
 
         @Override
-        TDF getTDF() {
-            return mockTDF;
+        NanoTDF getNanoTDF() {
+            return mockNanoTDF;
         }
     }
 }
