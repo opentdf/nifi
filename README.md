@@ -12,6 +12,16 @@ Components:
 * Controller Services:
   * [OpenTDFControllerService](./nifi-tdf-controller-services-api/src/main/java/io/opentdf/nifi/OpenTDFControllerService.java): A NiFi controller service providing OpenTDF Platform Configuration
 
+## Example
+
+See [An Sample NiFi FlowFile Template using ZTDF/NanoTDF Processors](./deploy/Example_ZTDF_NanoTDF.xml)
+
+Upload and use this template in NiFi:
+* Configure the OpenTDFControllerService properties
+  * set then OpenTDF compliant endpoint
+  * set OIDC Client credentials (client id and client secret)
+  * set the data policy (UpdateAttribute Processor)
+  * set the KAS URL: ConvertToZTDF , ConvertToNanoTDF processors
 
 #### FlowChart: Generic ZTDF Nifi Flows
 
