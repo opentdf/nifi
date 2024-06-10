@@ -18,16 +18,22 @@ import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.stream.io.StreamUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.Security;
 import java.util.*;
 
 /**
  * Common helper processor
  */
 public abstract class AbstractTDFProcessor extends AbstractProcessor {
+
+    static{
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     public static final PropertyDescriptor FLOWFILE_PULL_SIZE = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("FlowFile queue pull limit")
