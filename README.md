@@ -25,54 +25,12 @@ Upload and use this template in NiFi:
 
 #### FlowChart: Generic ZTDF Nifi Flows
 
-```mermaid
----
-title: Generic ZTDF NiFi Flows
----
-flowchart TD
-   a[Nifi Processor]
-   b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
-   c["`**ConvertToZTDF**`"]
-   d["Process ZTDF"]
-   e["Handle Error"]
-   f[Nifi Processor]
-   g["`**ConvertFromZTDF**`"]
-   h[Process Plaintext]
-   i[Handle Error]
-   a -- success (content = PlainText) --> b
-   b -- success (content = PlainText) --> c
-   c -- success (content = ZTDF) --> d
-   c -- failure --> e
-   f -- success (content = ZTDF) --> g
-   g -- success (content = PlainText) --> h
-   g -- failure --> i
-```
+![diagram](./docs/diagrams/generic_ztdf_nifi_flows.svg)
 
 #### FlowChart: Generic NanoTDF NiFi Flows
-```mermaid
----
-title: Generic NanoTDF NiFi Flows
----
-flowchart TD
-    a[Nifi Processor]
-    b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
-    c["`**ConvertToNanoTDF**`"]
-    d["Process NanoTDF"]
-    e["Handle Error"]
-    e2["Handle Max Size Error"]
-    f[Nifi Processor]
-    g["`**ConvertFromZTDF**`"]
-    h[Process Plaintext]
-    i[Handle Error]
-    a -- success (content = Plaintext) --> b
-    b -- success (content = Plaintext)--> c
-    c -- success (content = NanoTDF) --> d
-    c -- failure --> e
-    c -- exceeds_size_limit --> e2
-    f -- success (content = NanoTDF) --> g
-    g -- success (content = Plaintext) --> h
-    g -- failure --> i
-```
+
+![diagram](./docs/diagrams/generic_nanotdf_nifi_flows.svg)
+
 
 # Quick Start - Docker Compose
 
