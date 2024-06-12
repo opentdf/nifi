@@ -12,6 +12,11 @@ Components:
 * Controller Services:
   * [OpenTDFControllerService](./nifi-tdf-controller-services-api/src/main/java/io/opentdf/nifi/OpenTDFControllerService.java): A NiFi controller service providing OpenTDF Platform Configuration
 
+## Using a custom TrustStore
+Communicating over TLS with self-signed or other untrusted certs can be configured using NiFi's standard [SSL Context Service](https://nifi.apache.org/docs/nifi-docs/components/org.apache.nifi/nifi-ssl-context-service-nar/1.25.0/org.apache.nifi.ssl.StandardSSLContextService/index.html)
+and then wired into the processors by setting their respective SSL Context Service properties to use a configured
+SSL Context Service.
+
 ## Example
 
 See [An Sample NiFi FlowFile Template using ZTDF/NanoTDF Processors](./deploy/Example_ZTDF_NanoTDF.xml)
