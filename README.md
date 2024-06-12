@@ -34,8 +34,12 @@ Upload and use this template in NiFi:
 
 # Quick Start - Docker Compose
 
-1. Build the NiFi Archives (NARs) and place in the docker compose mounted volumes
+1. Build the NiFi Archives (NARs) and place in the docker compose mounted volumes. The opentd
+   java-sdk is currently hosted on github's maven package repository, so github credentials are required to perform a maven build.
+
     ```shell
+    export GITHUB_ACTOR=your gh username
+    export GITHUB_TOKEN=your gh token
     make compose-package
     ```
 1. Start docker compose
