@@ -1,0 +1,22 @@
+---
+title: Generic NanoTDF NiFi Flows
+---
+flowchart TD
+    a[Nifi Processor]
+    b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
+    c["`**ConvertToNanoTDF**`"]
+    d["Process NanoTDF"]
+    e["Handle Error"]
+    e2["Handle Max Size Error"]
+    f[Nifi Processor]
+    g["`**ConvertFromZTDF**`"]
+    h[Process Plaintext]
+    i[Handle Error]
+    a -- success (content = Plaintext) --> b
+b -- success (content = Plaintext)--> c
+c -- success (content = NanoTDF) --> d
+c -- failure --> e
+c -- exceeds_size_limit --> e2
+f -- success (content = NanoTDF) --> g
+g -- success (content = Plaintext) --> h
+g -- failure --> i

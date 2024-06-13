@@ -12,6 +12,11 @@ Components:
 * Controller Services:
   * [OpenTDFControllerService](./nifi-tdf-controller-services-api/src/main/java/io/opentdf/nifi/OpenTDFControllerService.java): A NiFi controller service providing OpenTDF Platform Configuration
 
+## Using a custom TrustStore
+Communicating over TLS with self-signed or other untrusted certs can be configured using NiFi's standard [SSL Context Service](https://nifi.apache.org/docs/nifi-docs/components/org.apache.nifi/nifi-ssl-context-service-nar/1.25.0/org.apache.nifi.ssl.StandardSSLContextService/index.html)
+and then wired into the processors by setting their respective SSL Context Service properties to use a configured
+SSL Context Service.
+
 ## Example
 
 See [An Sample NiFi FlowFile Template using ZTDF/NanoTDF Processors](./deploy/Example_ZTDF_NanoTDF.xml)
@@ -25,59 +30,21 @@ Upload and use this template in NiFi:
 
 #### FlowChart: Generic ZTDF Nifi Flows
 
-```mermaid
----
-title: Generic ZTDF NiFi Flows
----
-flowchart TD
-   a[Nifi Processor]
-   b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
-   c["`**ConvertToZTDF**`"]
-   d["Process ZTDF"]
-   e["Handle Error"]
-   f[Nifi Processor]
-   g["`**ConvertFromZTDF**`"]
-   h[Process Plaintext]
-   i[Handle Error]
-   a -- success (content = PlainText) --> b
-   b -- success (content = PlainText) --> c
-   c -- success (content = ZTDF) --> d
-   c -- failure --> e
-   f -- success (content = ZTDF) --> g
-   g -- success (content = PlainText) --> h
-   g -- failure --> i
-```
+![diagram](./docs/diagrams/generic_ztdf_nifi_flows.svg)
 
 #### FlowChart: Generic NanoTDF NiFi Flows
-```mermaid
----
-title: Generic NanoTDF NiFi Flows
----
-flowchart TD
-    a[Nifi Processor]
-    b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
-    c["`**ConvertToNanoTDF**`"]
-    d["Process NanoTDF"]
-    e["Handle Error"]
-    e2["Handle Max Size Error"]
-    f[Nifi Processor]
-    g["`**ConvertFromZTDF**`"]
-    h[Process Plaintext]
-    i[Handle Error]
-    a -- success (content = Plaintext) --> b
-    b -- success (content = Plaintext)--> c
-    c -- success (content = NanoTDF) --> d
-    c -- failure --> e
-    c -- exceeds_size_limit --> e2
-    f -- success (content = NanoTDF) --> g
-    g -- success (content = Plaintext) --> h
-    g -- failure --> i
-```
+
+![diagram](./docs/diagrams/generic_nanotdf_nifi_flows.svg)
+
 
 # Quick Start - Docker Compose
 
-1. Build the NiFi Archives (NARs) and place in the docker compose mounted volumes
+1. Build the NiFi Archives (NARs) and place in the docker compose mounted volumes. The opentd
+   java-sdk is currently hosted on github's maven package repository, so github credentials are required to perform a maven build.
+
     ```shell
+    export GITHUB_ACTOR=your gh username
+    export GITHUB_TOKEN=your gh token
     make compose-package
     ```
 1. Start docker compose
