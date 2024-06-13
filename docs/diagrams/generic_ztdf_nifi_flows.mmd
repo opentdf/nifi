@@ -1,0 +1,20 @@
+---
+title: Generic ZTDF NiFi Flows
+---
+flowchart TD
+    a[Nifi Processor]
+    b["`**UpdateAttribute**`" Add data policy attributes to FlowFile]
+    c["`**ConvertToZTDF**`"]
+    d["Process ZTDF"]
+    e["Handle Error"]
+    f[Nifi Processor]
+    g["`**ConvertFromZTDF**`"]
+    h[Process Plaintext]
+    i[Handle Error]
+    a -- success (content = PlainText) --> b
+b -- success (content = PlainText) --> c
+c -- success (content = ZTDF) --> d
+c -- failure --> e
+f -- success (content = ZTDF) --> g
+g -- success (content = PlainText) --> h
+g -- failure --> i
