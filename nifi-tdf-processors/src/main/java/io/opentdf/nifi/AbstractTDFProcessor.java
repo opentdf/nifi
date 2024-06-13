@@ -31,10 +31,6 @@ import java.util.*;
  */
 public abstract class AbstractTDFProcessor extends AbstractProcessor {
 
-    static{
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
     public static final PropertyDescriptor FLOWFILE_PULL_SIZE = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("FlowFile queue pull limit")
             .description("FlowFile queue pull size limit")
