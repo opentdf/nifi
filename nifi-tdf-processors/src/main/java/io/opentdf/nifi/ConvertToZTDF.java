@@ -46,6 +46,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
                             }
                         }
                 );
+                updatedFlowFile = processSession.putAttribute(updatedFlowFile, "mime.type", "application/ztdf+zip");
                 processSession.transfer(updatedFlowFile, REL_SUCCESS);
             } catch (Exception e) {
                 getLogger().error(flowFile.getId() + ": error converting plain text to ZTDF", e);

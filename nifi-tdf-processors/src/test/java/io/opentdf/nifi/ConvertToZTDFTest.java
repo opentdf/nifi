@@ -14,10 +14,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static io.opentdf.nifi.AbstractTDFProcessor.OPENTDF_CONFIG_SERVICE;
 import static io.opentdf.nifi.SimpleOpenTDFControllerService.*;
@@ -87,6 +85,7 @@ class ConvertToZTDFTest {
         runner.run(1);
         List<MockFlowFile> flowFileList =
                 runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
+        assertEquals(Set.of("application/ztdf+zip"), flowFileList.stream().map(x->x.getAttribute("mime.type")).collect(Collectors.toSet()));
         assertEquals(2, flowFileList.size(), "Two flowfiles for success relationship");
         assertEquals(1, flowFileList.stream().filter(x -> x.getAttribute("filename").equals(messageTwo.getAttribute("filename")))
                 .filter(x -> x.getContent().equals("TDF:message two")).count());
