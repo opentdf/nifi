@@ -1,11 +1,11 @@
 package io.opentdf.nifi;
 
+import io.opentdf.platform.sdk.Config;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.SDKBuilder;
 import io.opentdf.platform.sdk.TDF;
 import io.opentdf.platform.sdk.TDF.Reader;
 import nl.altindag.ssl.util.KeyStoreUtils;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.util.MockFlowFile;
@@ -78,7 +78,7 @@ class ConvertFromZTDFTest {
 
         ArgumentCaptor<SeekableByteChannel> seekableByteChannelArgumentCaptor = ArgumentCaptor.forClass(SeekableByteChannel.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
-
+        ArgumentCaptor<Config.AssertionConfig> assertionConfigCaptor = ArgumentCaptor.forClass(Config.AssertionConfig.class);
         Reader mockReader = mock(Reader.class);
 
         ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
@@ -95,11 +95,12 @@ class ConvertFromZTDFTest {
             ByteBuffer bb = ByteBuffer.allocate((int)seekableByteChannel.size());
             seekableByteChannel.read(bb);
             messages.add(new String(bb.array()));
-            SDK.KAS kas = invocationOnMock.getArgument(1);
+            SDK.KAS kas = invocationOnMock.getArgument(2);
             assertNotNull(kas, "KAS is not null");
             assertSame(mockKAS, kas, "Expected KAS passed in");
             return mockReader;
         }).when(mockTDF).loadTDF(seekableByteChannelArgumentCaptor.capture(),
+                assertionConfigCaptor.capture(),
                 kasArgumentCaptor.capture());
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
         MockFlowFile messageTwo = runner.enqueue("message two".getBytes());

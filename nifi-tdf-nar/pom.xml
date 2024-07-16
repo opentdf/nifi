@@ -21,9 +21,9 @@
             <version>0.2.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
         </dependency>
         <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-ssl-context-service-nar</artifactId>
-            <version>${nifi.version}</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>nifi-tdf-processors</artifactId>
+            <version>0.2.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
             <type>nar</type>
         </dependency>
     </dependencies>

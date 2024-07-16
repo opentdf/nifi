@@ -19,7 +19,7 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.stream.io.StreamUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
+import io.opentdf.platform.sdk.Config.AssertionConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -104,6 +104,10 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             sdk = sdkBuilder.build();
         }
         return this.sdk;
+    }
+
+    AssertionConfig getAssertionConfig(ProcessContext processContext) {
+        return new AssertionConfig();
     }
 
     //this is really here to allow for easier mocking for testing
