@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>nifi-tdf-processors</artifactId>
+            <artifactId>nifi-tdf-controller-services-nar</artifactId>
             <version>0.2.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
             <type>nar</type>
         </dependency>
