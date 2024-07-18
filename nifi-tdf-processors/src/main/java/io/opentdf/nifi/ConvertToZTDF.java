@@ -12,18 +12,22 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyValue;
+import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.key.service.api.PrivateKeyService;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.ssl.SSLContextService;
+
 
 import java.io.IOException;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 import java.util.function.Consumer;
@@ -57,14 +61,16 @@ public class ConvertToZTDF extends AbstractToProcessor {
             .required(false)
             .defaultValue("false")
             .allowableValues("true", "false")
+            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
             .build();
 
     public static final PropertyDescriptor PRIVATE_KEY_CONTROLLER_SERVICE = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("Private Key Controller Service")
             .description("Optional Private Key Service; this is need for assertion signing")
             .required(true)
-            .identifiesControllerService(SSLContextService.class)
+            .identifiesControllerService(PrivateKeyService.class)
             .dependsOn(SIGN_ASSERTIONS, new AllowableValue("true"))
+            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
             .build();
 
 
@@ -84,6 +90,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
 
     Gson gson = new Gson();
 
+
     /**
      * Build an assertion from the attribute
      * @return
@@ -93,13 +100,14 @@ public class ConvertToZTDF extends AbstractToProcessor {
         String assertionJson = flowFile.getAttribute(flowFileAttributeName);
         Map<?,?> assertionMap = gson.fromJson(assertionJson, Map.class);
         Assertion assertion = new Assertion();
-        assertion.type = assertionMap.containsKey("type") ? Assertion.Type.valueOf((String)assertionMap.get("type")).name() : null;
-        assertion.scope =assertionMap.containsKey("scope") ? Assertion.Scope.valueOf((String)assertionMap.get("scope")).name() : null;
-        assertion.appliesToState = assertionMap.containsKey("appliesToState") ? Assertion.AppliesToState.valueOf((String)assertionMap.get("appliesToState")).name() : null;
+        assertion.id = assertionMap.containsKey("id") ? (String)assertionMap.get("id") : null;
+        assertion.type = assertionMap.containsKey("type") ? (String)assertionMap.get("type") : null;
+        assertion.scope =assertionMap.containsKey("scope") ? (String)assertionMap.get("scope") : null;
+        assertion.appliesToState = assertionMap.containsKey("appliesToState") ? (String)assertionMap.get("appliesToState"): null;
         assertion.statement = new Assertion.Statement();
         Map<?,?> statementMap = (Map<?,?>)assertionMap.get("statement");
         if(statementMap!=null) {
-            assertion.statement.format = statementMap.containsKey("format") ? Assertion.StatementFormat.valueOf((String)statementMap.get("format")).name() : null;
+            assertion.statement.format = statementMap.containsKey("format") ? (String)statementMap.get("format") : null;
             assertion.statement.value = (String)statementMap.get("value");
         }
         if(assertion.scope == null){
@@ -130,29 +138,12 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 //build baseline TDF Config options
                 List<Consumer<TDFConfig>> configurationOptions = new ArrayList<>(Arrays.asList(Config.withKasInformation(kasInfoList.toArray(new Config.KASInfo[0])),
                         Config.withDataAttributes(dataAttributes.toArray(new String[0]))));
-                List<String> nifiAssertionAttributeKeys = flowFile.getAttributes().keySet().stream().filter(x->x.startsWith("tdf_assertion_")).toList();
+                List<String> nifiAssertionAttributeKeys = flowFile.getAttributes().keySet().stream().filter(x->x.startsWith(TDF_ASSERTION_PREFIX)).toList();
                 for(String nifiAssertionAttributeKey: nifiAssertionAttributeKeys) {
                     getLogger().debug(String.format("Adding assertion for NiFi attribute = %s", nifiAssertionAttributeKey));
                     configurationOptions.add(Config.WithAssertion(buildAssertion(flowFile, nifiAssertionAttributeKey)));
                 }
-                Config.AssertionConfig assertionConfig = new Config.AssertionConfig();
-                //populate assertion signing config only when sign assertions property is true and assertions exist
-                if (!nifiAssertionAttributeKeys.isEmpty() && processContext.getProperty(SIGN_ASSERTIONS).asBoolean()) {
-                    getLogger().debug("signed assertions is active");
-                    PrivateKeyService privateKeyService = getPrivateKeyService(processContext);
-                    if (privateKeyService != null) {
-                        getLogger().debug("adding signing configuration for assertion");
-                        //TODO assumes RSA256 signing key
-                        PrivateKey privateKey = privateKeyService.getPrivateKey();
-                        RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey) privateKey;
-                        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent());
-                        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                        RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
-                        assertionConfig.keyType = Config.AssertionConfig.KeyType.RS256;
-                        assertionConfig.rs256PrivateKeyForSigning = new RSAKey.Builder(rsaPublicKey).privateKey(rsaPrivateKey).build();
-                    }
-                }
-                configurationOptions.add(Config.withAssertionConfig(assertionConfig));
+                configurationOptions.add(Config.withAssertionConfig(buildAssertionConfig(processContext, nifiAssertionAttributeKeys)));
                 TDFConfig config = Config.newTDFConfig(configurationOptions.toArray(new Consumer[0]));
 
                 //write ZTDF to FlowFile
@@ -172,5 +163,27 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 processSession.transfer(flowFile, REL_FAILURE);
             }
         }
+    }
+
+    private Config.AssertionConfig buildAssertionConfig(ProcessContext processContext, List<String> nifiAssertionAttributeKeys) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        Config.AssertionConfig assertionConfig = new Config.AssertionConfig();
+        Optional<PropertyValue> signAssertions = getPropertyValue(SIGN_ASSERTIONS, processContext);
+        //populate assertion signing config only when sign assertions property is true and assertions exist
+        if (!nifiAssertionAttributeKeys.isEmpty() && signAssertions.isPresent() && signAssertions.get().asBoolean()) {
+            getLogger().debug("signed assertions is active");
+            PrivateKeyService privateKeyService = getPrivateKeyService(processContext);
+            if (privateKeyService != null) {
+                getLogger().debug("adding signing configuration for assertion");
+                //TODO assumes RSA256 signing key
+                PrivateKey privateKey = privateKeyService.getPrivateKey();
+                RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey) privateKey;
+                RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent());
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
+                assertionConfig.keyType = Config.AssertionConfig.KeyType.RS256;
+                assertionConfig.rs256PrivateKeyForSigning = new RSAKey.Builder(rsaPublicKey).privateKey(rsaPrivateKey).build();
+            }
+        }
+        return assertionConfig;
     }
 }

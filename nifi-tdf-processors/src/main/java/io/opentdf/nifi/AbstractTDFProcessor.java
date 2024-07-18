@@ -74,6 +74,14 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
         return propertyValue.isExpressionLanguagePresent() ? propertyValue.evaluateAttributeExpressions() : propertyValue;
     }
 
+    Optional<PropertyValue> getPropertyValue(PropertyDescriptor propertyDescriptor, ProcessContext processContext) {
+        PropertyValue propertyValue = null;
+        if(processContext.getProperty(propertyDescriptor).isSet()){
+            propertyValue = getPropertyValue(processContext.getProperty(propertyDescriptor));
+        }
+        return Optional.ofNullable(propertyValue);
+    }
+
     private SDK sdk;
 
     /**
@@ -104,10 +112,6 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             sdk = sdkBuilder.build();
         }
         return this.sdk;
-    }
-
-    AssertionConfig getAssertionConfig(ProcessContext processContext) {
-        return new AssertionConfig();
     }
 
     //this is really here to allow for easier mocking for testing

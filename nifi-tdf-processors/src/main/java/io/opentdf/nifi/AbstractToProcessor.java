@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractToProcessor extends AbstractTDFProcessor{
     static final String KAS_URL_ATTRIBUTE = "kas_url";
     static final String TDF_ATTRIBUTE = "tdf_attribute";
+    static final String TDF_ASSERTION_PREFIX = "tdf_assertion_";
 
     public static final PropertyDescriptor KAS_URL = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("KAS URL")
