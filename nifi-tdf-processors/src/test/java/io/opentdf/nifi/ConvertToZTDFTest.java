@@ -135,6 +135,7 @@ class ConvertToZTDFTest {
         Config.AssertionConfig assertionConfig = captures.configArgumentCaptor.getValue().assertionConfig;
         assertNotNull(assertionConfig, "Assertion configuration present");
         assertNotNull(assertionConfig.rs256PrivateKeyForSigning, "signing key present");
+        assertNotNull(assertionConfig.rs256PublicKeyForVerifying, "validation key present");
         assertEquals(assertionConfig.keyType, Config.AssertionConfig.KeyType.RS256);
         List<Assertion> assertions = captures.configArgumentCaptor.getValue().assertionList;
         assertEquals(assertions.size(), 1);

@@ -182,6 +182,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
                 assertionConfig.keyType = Config.AssertionConfig.KeyType.RS256;
                 assertionConfig.rs256PrivateKeyForSigning = new RSAKey.Builder(rsaPublicKey).privateKey(rsaPrivateKey).build();
+                assertionConfig.rs256PublicKeyForVerifying = new RSAKey.Builder(rsaPublicKey).build();
             }
         }
         return assertionConfig;
