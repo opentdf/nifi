@@ -19,7 +19,7 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.stream.io.StreamUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
+import io.opentdf.platform.sdk.Config.AssertionConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -72,6 +72,14 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
      */
     PropertyValue getPropertyValue(PropertyValue propertyValue) {
         return propertyValue.isExpressionLanguagePresent() ? propertyValue.evaluateAttributeExpressions() : propertyValue;
+    }
+
+    Optional<PropertyValue> getPropertyValue(PropertyDescriptor propertyDescriptor, ProcessContext processContext) {
+        PropertyValue propertyValue = null;
+        if(processContext.getProperty(propertyDescriptor).isSet()){
+            propertyValue = getPropertyValue(processContext.getProperty(propertyDescriptor));
+        }
+        return Optional.ofNullable(propertyValue);
     }
 
     private SDK sdk;

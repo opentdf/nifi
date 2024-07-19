@@ -26,7 +26,7 @@ public class SimpleOpenTDFControllerService extends AbstractControllerService im
             .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .sensitive(false)
-            .description("OpenTDF Platform ENDPOINT")
+            .description("OpenTDF Platform ENDPOINT in GRPC compatible format (no protocol prefix)")
             .build();
 
     public static final PropertyDescriptor CLIENT_SECRET = new PropertyDescriptor.Builder()
