@@ -6,7 +6,8 @@
 ### Features
 
 * add ztdf mime type ([#13](https://github.com/opentdf/nifi/issues/13)) ([eee6403](https://github.com/opentdf/nifi/commit/eee6403fd2d3c9eff97fca94634b29482f691f1e))
-
+* add assertions ([#13](https://github.com/opentdf/nifi/issues/14)) ([0041c1f](https://github.com/opentdf/nifi/commit/0041c1fba56b9b4e98bbb4b9541394b22c959d8b))
+  
 ## 0.1.0 (2024-06-10)
 
 
