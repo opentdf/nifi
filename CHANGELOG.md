@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/opentdf/nifi/compare/v0.1.0...v0.2.0) (2024-07-19)
+
+
+### Features
+
+* add ztdf mime type ([#13](https://github.com/opentdf/nifi/issues/13)) ([eee6403](https://github.com/opentdf/nifi/commit/eee6403fd2d3c9eff97fca94634b29482f691f1e))
+
 ## 0.1.0 (2024-06-10)
 
 
