@@ -1,7 +1,7 @@
 package io.opentdf.nifi;
 
 import com.nimbusds.jose.JOSEException;
-import io.opentdf.platform.sdk.Assertion;
+import io.opentdf.platform.sdk.AssertionConfig;
 import io.opentdf.platform.sdk.Config;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.TDF;
@@ -86,11 +86,8 @@ class ConvertToZTDFTest {
         runner.enqueue("message two".getBytes(), Map.of(ConvertToZTDF.TDF_ATTRIBUTE,
                 "https://example.org/attr/one/value/a,https://example.org/attr/one/value/b"));
         runner.run(1);
-        Config.AssertionConfig assertionConfig = captures.configArgumentCaptor.getValue().assertionConfig;
-        assertNotNull(assertionConfig, "Assertion configuration present");
-        assertNull(assertionConfig.rs256PrivateKeyForSigning, "no signing key");
-        List<Assertion> assertions = captures.configArgumentCaptor.getValue().assertionList;
-        assertTrue(assertions.isEmpty(), "no assertions");
+        List<AssertionConfig> assertionConfig = captures.configArgumentCaptor.getValue().assertionConfigList;
+        assertTrue(assertionConfig.isEmpty(), "no assertions");
         List<MockFlowFile> flowFileList =
                 runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
         assertEquals(1, flowFileList.size(), "one success flow file");
@@ -122,9 +119,9 @@ class ConvertToZTDFTest {
                 """
                         {
                         "id": "1111",
-                        "type": "Handling",
+                        "type": "handling",
                         "appliesToState": "unencrypted",
-                        "scope": "PAYL",
+                        "scope": "payload",
                         "statement": {
                             "value": "a test assertion",
                             "format": "sample"
@@ -132,19 +129,18 @@ class ConvertToZTDFTest {
                         }
                         """));
         runner.run(1);
-        Config.AssertionConfig assertionConfig = captures.configArgumentCaptor.getValue().assertionConfig;
+        List<AssertionConfig> assertionConfigList = captures.configArgumentCaptor.getValue().assertionConfigList;
+        assertEquals(assertionConfigList.size(), 1);
+        AssertionConfig assertionConfig = assertionConfigList.get(0);
         assertNotNull(assertionConfig, "Assertion configuration present");
-        assertNotNull(assertionConfig.rs256PrivateKeyForSigning, "signing key present");
-        assertNotNull(assertionConfig.rs256PublicKeyForVerifying, "validation key present");
-        assertEquals(assertionConfig.keyType, Config.AssertionConfig.KeyType.RS256);
-        List<Assertion> assertions = captures.configArgumentCaptor.getValue().assertionList;
-        assertEquals(assertions.size(), 1);
-        assertEquals("a test assertion", assertions.get(0).statement.value);
-        assertEquals("sample", assertions.get(0).statement.format);
-        assertEquals("PAYL", assertions.get(0).scope);
-        assertEquals("unencrypted", assertions.get(0).appliesToState);
-        assertEquals("Handling", assertions.get(0).type);
-        assertEquals("1111", assertions.get(0).id);
+        assertNotNull(assertionConfig.assertionKey.key, "signing key present");
+        assertEquals(assertionConfig.assertionKey.alg, AssertionConfig.AssertionKeyAlg.RS256);
+        assertEquals("a test assertion", assertionConfig.statement.value);
+        assertEquals("sample", assertionConfig.statement.format);
+        assertEquals(AssertionConfig.Scope.Payload, assertionConfig.scope);
+        assertEquals(AssertionConfig.AppliesToState.Unencrypted, assertionConfig.appliesToState);
+        assertEquals(AssertionConfig.Type.HandlingAssertion, assertionConfig.type);
+        assertEquals("1111", assertionConfig.id);
         List<MockFlowFile> flowFileList =
                 runner.getFlowFilesForRelationship(ConvertFromZTDF.REL_SUCCESS);
         assertEquals(1, flowFileList.size(), "one success flow file");

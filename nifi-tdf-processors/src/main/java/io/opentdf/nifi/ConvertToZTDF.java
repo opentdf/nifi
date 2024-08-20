@@ -1,8 +1,7 @@
 package io.opentdf.nifi;
 
 import com.google.gson.Gson;
-import com.nimbusds.jose.jwk.RSAKey;
-import io.opentdf.platform.sdk.Assertion;
+import io.opentdf.platform.sdk.AssertionConfig;
 import io.opentdf.platform.sdk.Config;
 import io.opentdf.platform.sdk.Config.TDFConfig;
 import io.opentdf.platform.sdk.SDK;
@@ -20,15 +19,10 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
 
-
 import java.io.IOException;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -90,42 +84,49 @@ public class ConvertToZTDF extends AbstractToProcessor {
 
     Gson gson = new Gson();
 
-
+    Map<String, AssertionConfig.Type> assertionTypeMap = Map.of("handling", AssertionConfig.Type.HandlingAssertion,
+            "base", AssertionConfig.Type.BaseAssertion);
+    Map<String, AssertionConfig.Scope> assertionScopeMap = Map.of("tdo", AssertionConfig.Scope.TrustedDataObj,
+            "payload", AssertionConfig.Scope.Payload);
+    Map<String, AssertionConfig.AppliesToState> assertionAppliesToStateMap = Map.of("encrypted", AssertionConfig.AppliesToState.Encrypted,
+            "unencrypted", AssertionConfig.AppliesToState.Unencrypted);
     /**
-     * Build an assertion from the attribute
+     * Build an assertion config from the flow file attribute
      * @return
      * @throws Exception throw exception when assertion is not valid
      */
-    Assertion buildAssertion(FlowFile flowFile, String flowFileAttributeName) throws Exception{
+    AssertionConfig buildAssertion(ProcessContext processContext, FlowFile flowFile, String flowFileAttributeName) throws Exception{
         String assertionJson = flowFile.getAttribute(flowFileAttributeName);
         Map<?,?> assertionMap = gson.fromJson(assertionJson, Map.class);
-        Assertion assertion = new Assertion();
-        assertion.id = assertionMap.containsKey("id") ? (String)assertionMap.get("id") : null;
-        assertion.type = assertionMap.containsKey("type") ? (String)assertionMap.get("type") : null;
-        assertion.scope =assertionMap.containsKey("scope") ? (String)assertionMap.get("scope") : null;
-        assertion.appliesToState = assertionMap.containsKey("appliesToState") ? (String)assertionMap.get("appliesToState"): null;
-        assertion.statement = new Assertion.Statement();
+        AssertionConfig assertionConfig = new AssertionConfig();
+        assertionConfig.id = assertionMap.containsKey("id") ? (String)assertionMap.get("id") : null;
+        assertionConfig.type = assertionMap.containsKey("type") ? assertionTypeMap.get(assertionMap.get("type")) : null;
+        assertionConfig.scope =assertionMap.containsKey("scope") ? assertionScopeMap.get(assertionMap.get("scope")) : null;
+        assertionConfig.appliesToState = assertionMap.containsKey("appliesToState") ? assertionAppliesToStateMap.get(assertionMap.get("appliesToState")): null;
+        assertionConfig.statement = new AssertionConfig.Statement();
+
         Map<?,?> statementMap = (Map<?,?>)assertionMap.get("statement");
         if(statementMap!=null) {
-            assertion.statement.format = statementMap.containsKey("format") ? (String)statementMap.get("format") : null;
-            assertion.statement.value = (String)statementMap.get("value");
+            assertionConfig.statement.format = statementMap.containsKey("format") ? (String)statementMap.get("format") : null;
+            assertionConfig.statement.value = (String)statementMap.get("value");
         }
-        if(assertion.scope == null){
+        addSigningInfoToAssertionConfig(processContext, assertionConfig);
+        if(assertionConfig.scope == null){
             throw new Exception("assertion scope is required");
         }
-        if(assertion.statement == null){
+        if(assertionConfig.statement == null){
             throw new Exception("assertion statement is required");
         }
-        if(assertion.statement.format == null){
+        if(assertionConfig.statement.format == null){
             throw new Exception("assertion statement format is required");
         }
-        if(assertion.appliesToState == null){
+        if(assertionConfig.appliesToState == null){
             throw new Exception("assertion appliesToState is required");
         }
-        if(assertion.type == null){
+        if(assertionConfig.type == null){
             throw new Exception("assertion type is required");
         }
-        return assertion;
+        return assertionConfig;
     }
 
     @Override
@@ -141,9 +142,8 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 List<String> nifiAssertionAttributeKeys = flowFile.getAttributes().keySet().stream().filter(x->x.startsWith(TDF_ASSERTION_PREFIX)).toList();
                 for(String nifiAssertionAttributeKey: nifiAssertionAttributeKeys) {
                     getLogger().debug(String.format("Adding assertion for NiFi attribute = %s", nifiAssertionAttributeKey));
-                    configurationOptions.add(Config.WithAssertion(buildAssertion(flowFile, nifiAssertionAttributeKey)));
+                    configurationOptions.add(Config.withAssertionConfig(buildAssertion(processContext, flowFile, nifiAssertionAttributeKey)));
                 }
-                configurationOptions.add(Config.withAssertionConfig(buildAssertionConfig(processContext, nifiAssertionAttributeKeys)));
                 TDFConfig config = Config.newTDFConfig(configurationOptions.toArray(new Consumer[0]));
 
                 //write ZTDF to FlowFile
@@ -165,26 +165,18 @@ public class ConvertToZTDF extends AbstractToProcessor {
         }
     }
 
-    private Config.AssertionConfig buildAssertionConfig(ProcessContext processContext, List<String> nifiAssertionAttributeKeys) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        Config.AssertionConfig assertionConfig = new Config.AssertionConfig();
+    private void addSigningInfoToAssertionConfig(ProcessContext processContext, AssertionConfig assertionConfig) throws NoSuchAlgorithmException, InvalidKeySpecException {
         Optional<PropertyValue> signAssertions = getPropertyValue(SIGN_ASSERTIONS, processContext);
         //populate assertion signing config only when sign assertions property is true and assertions exist
-        if (!nifiAssertionAttributeKeys.isEmpty() && signAssertions.isPresent() && signAssertions.get().asBoolean()) {
+        if (signAssertions.isPresent() && signAssertions.get().asBoolean()) {
             getLogger().debug("signed assertions is active");
             PrivateKeyService privateKeyService = getPrivateKeyService(processContext);
             if (privateKeyService != null) {
                 getLogger().debug("adding signing configuration for assertion");
                 //TODO assumes RSA256 signing key
                 PrivateKey privateKey = privateKeyService.getPrivateKey();
-                RSAPrivateCrtKey rsaPrivateKey = (RSAPrivateCrtKey) privateKey;
-                RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(), rsaPrivateKey.getPublicExponent());
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(publicKeySpec);
-                assertionConfig.keyType = Config.AssertionConfig.KeyType.RS256;
-                assertionConfig.rs256PrivateKeyForSigning = new RSAKey.Builder(rsaPublicKey).privateKey(rsaPrivateKey).build();
-                assertionConfig.rs256PublicKeyForVerifying = new RSAKey.Builder(rsaPublicKey).build();
+                assertionConfig.assertionKey = new AssertionConfig.AssertionKey(AssertionConfig.AssertionKeyAlg.RS256, privateKey);
             }
         }
-        return assertionConfig;
     }
 }
