@@ -149,7 +149,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 //write ZTDF to FlowFile
                 FlowFile updatedFlowFile = processSession.write(flowFile, (inputStream, outputStream) -> {
                             try {
-                                getTDF().createTDF(inputStream, outputStream, config, sdk.getServices().kas());
+                                getTDF().createTDF(inputStream, outputStream, config, sdk.getServices().kas(), sdk.getServices().attributes());
                             } catch (Exception e) {
                                 getLogger().error("error creating ZTDF", e);
                                 throw new IOException(e);

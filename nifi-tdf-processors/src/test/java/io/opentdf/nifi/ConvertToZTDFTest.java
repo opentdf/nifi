@@ -1,10 +1,9 @@
 package io.opentdf.nifi;
 
 import com.nimbusds.jose.JOSEException;
-import io.opentdf.platform.sdk.AssertionConfig;
+import io.opentdf.platform.policy.attributes.AttributesServiceGrpc;
+import io.opentdf.platform.sdk.*;
 import io.opentdf.platform.sdk.Config;
-import io.opentdf.platform.sdk.SDK;
-import io.opentdf.platform.sdk.TDF;
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.key.service.api.PrivateKeyService;
 import org.apache.nifi.processor.ProcessContext;
@@ -22,6 +21,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -146,7 +146,7 @@ class ConvertToZTDFTest {
         assertEquals(1, flowFileList.size(), "one success flow file");
     }
 
-    private Captures commonProcessorTestSetup(TestRunner runner) throws IOException, JOSEException {
+    private Captures commonProcessorTestSetup(TestRunner runner) throws IOException, JOSEException, ExecutionException, InterruptedException {
         ((ConvertToZTDFTest.MockRunner) runner.getProcessor()).mockSDK = mockSDK;
         ((ConvertToZTDFTest.MockRunner) runner.getProcessor()).mockTDF = mockTDF;
         runner.setProperty(ConvertToZTDF.KAS_URL, "https://kas1");
@@ -171,16 +171,17 @@ class ConvertToZTDFTest {
             assertSame(mockKAS, kas, "Expected KAS passed in");
             if (new String(b).equals("message two")) {
                 assertEquals(2, config.attributes.size());
-                assertTrue(config.attributes.containsAll(Arrays.asList("https://example.org/attr/one/value/a", "https://example.org/attr/one/value/b")));
+                assertTrue(config.attributes.containsAll(Arrays.asList(new Autoconfigure.AttributeValueFQN("https://example.org/attr/one/value/a"), new Autoconfigure.AttributeValueFQN("https://example.org/attr/one/value/b"))));
             } else {
                 assertEquals(1, config.attributes.size());
-                assertTrue(config.attributes.contains("https://example.org/attr/one/value/c"));
+                assertTrue(config.attributes.contains(new Autoconfigure.AttributeValueFQN("https://example.org/attr/one/value/c")));
             }
             return null;
         }).when(mockTDF).createTDF(captures.inputStreamArgumentCaptor.capture(),
                 captures.outputStreamArgumentCaptor.capture(),
                 captures.configArgumentCaptor.capture(),
-                captures.kasArgumentCaptor.capture());
+                captures.kasArgumentCaptor.capture(),
+                captures.attrSvcArgumentCaptor.capture());
         return captures;
     }
 
@@ -189,6 +190,7 @@ class ConvertToZTDFTest {
         ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
         ArgumentCaptor<Config.TDFConfig> configArgumentCaptor = ArgumentCaptor.forClass(Config.TDFConfig.class);
+        ArgumentCaptor<AttributesServiceGrpc.AttributesServiceFutureStub> attrSvcArgumentCaptor = ArgumentCaptor.forClass(AttributesServiceGrpc.AttributesServiceFutureStub.class);
     }
 
     public static class MockRunner extends ConvertToZTDF {
