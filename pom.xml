@@ -6,7 +6,7 @@
 
     <groupId>io.opentdf.nifi</groupId>
     <artifactId>nifi-pom</artifactId>
-    <version>0.3.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
+    <version>0.3.0</version><!-- {x-version-update:nifi:current} -->
     <name>nifi-pom</name>
     <packaging>pom</packaging>
     <description>NiFi processors for OpenTDF</description>
