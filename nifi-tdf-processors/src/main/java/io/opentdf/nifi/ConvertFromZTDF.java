@@ -13,6 +13,7 @@ import org.apache.nifi.processor.exception.ProcessException;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,13 +25,14 @@ public class ConvertFromZTDF extends AbstractTDFProcessor {
     @Override
     void processFlowFiles(ProcessContext processContext, ProcessSession processSession, List<FlowFile> flowFiles) throws ProcessException {
         SDK sdk = getTDFSDK(processContext);
-        Config.AssertionConfig assertionConfig = new Config.AssertionConfig();
+        //TODO add assertion verification key list population
+        List<Config.AssertionVerificationKeys> assertionVerificationKeysList = new ArrayList<>();
         for (FlowFile flowFile : flowFiles) {
             try {
                 try (SeekableByteChannel seekableByteChannel = new SeekableInMemoryByteChannel(readEntireFlowFile(flowFile, processSession))) {
                     FlowFile updatedFlowFile = processSession.write(flowFile, outputStream -> {
                         try {
-                            TDF.Reader reader = getTDF().loadTDF(seekableByteChannel, assertionConfig, sdk.getServices().kas());
+                            TDF.Reader reader = getTDF().loadTDF(seekableByteChannel, sdk.getServices().kas(), assertionVerificationKeysList.toArray(new Config.AssertionVerificationKeys[0]));
                             reader.readPayload(outputStream);
                         } catch (Exception e) {
                             getLogger().error("error decrypting ZTDF", e);
