@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/opentdf/nifi/compare/v0.3.0...v0.4.0) (2024-08-27)
+
+
+### Features
+
+* upgrade to 0.6.1 java-sdk ([#23](https://github.com/opentdf/nifi/issues/23)) ([c8f833c](https://github.com/opentdf/nifi/commit/c8f833c61371ed1cf6c03011490b800ca5ac2ecd))
+
 ## [0.3.0](https://github.com/opentdf/nifi/compare/v0.2.0...v0.3.0) (2024-08-23)
 
 
