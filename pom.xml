@@ -188,17 +188,11 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>report</id>
-                                <phase>test</phase>
+                                <id>report-aggregate</id>
+                                <phase>verify</phase>
                                 <goals>
-                                    <goal>report</goal>
+                                    <goal>report-aggregate</goal>
                                 </goals>
-                                <configuration>
-                                    <dataFile>${project.parent.basedir}/target/jacoco.exec</dataFile>
-                                    <formats>
-                                        <format>XML</format>
-                                    </formats>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
