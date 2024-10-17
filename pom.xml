@@ -140,6 +140,7 @@
                 <sonar.organization>opentdf</sonar.organization>
                 <sonar.projectKey>opentdf_nifi</sonar.projectKey>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
             </properties>
             <build>
                 <plugins>
