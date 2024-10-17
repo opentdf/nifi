@@ -53,9 +53,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - uses: bufbuild/buf-setup-action@2211e06e8cf26d628cda2eea15c95f8c42b080b3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up JDK
         uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
         with:
@@ -63,10 +60,18 @@ jobs:
           distribution: "temurin"
           server-id: github
       - name: Maven Test Coverage
-        env:
-          BUF_INPUT_HTTPS_USERNAME: opentdf-bot
-          BUF_INPUT_HTTPS_PASSWORD: ${{ secrets.PERSONAL_ACCESS_TOKEN_OPENTDF }}
         run: mvn --batch-mode clean verify -P coverage
+      - name: Post coverage report
+        env:
+          SONAR_URL: "https://sonarcloud.io"
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PROJECT_KEY: "opentdf_nifi"
+          REPORT_PATH: "target/site/jacoco-aggregate/jacoco.xml"
+        run: |
+          curl -X POST -u $SONAR_TOKEN: \
+            -F "projectKey=$PROJECT_KEY" \
+            -F "report=@${REPORT_PATH}" \
+            "$SONAR_URL/api/ce/submit"
 
   ci:
     needs:
