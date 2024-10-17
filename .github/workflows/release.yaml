@@ -42,8 +42,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
         with:
-          java-version: "11"
-          distribution: "adopt"
+          java-version: "21"
+          distribution: "temurin"
           # write settings.xml
           server-id: github
           server-username: GITHUB_ACTOR
@@ -62,8 +62,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
         with:
-          java-version: "11"
-          distribution: "adopt"
+          java-version: "21"
+          distribution: "temurin"
           # write settings.xml
           server-id: central
           server-username: MAVEN_USERNAME
