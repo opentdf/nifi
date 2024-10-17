@@ -62,20 +62,8 @@ jobs:
       - name: Maven Test Coverage
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn --batch-mode clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage
-#      - name: Post coverage report
-#        env:
-#          SONAR_URL: "https://sonarcloud.io"
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#          ORGANIZATION: "opentdf"
-#          PROJECT_KEY: "opentdf_nifi"
-#          REPORT_PATH: "target/site/jacoco-aggregate/jacoco.xml"
-#        run: |
-#          curl -X POST -u $SONAR_TOKEN: \
-#            -F "organization=$ORGANIZATION" \
-#            -F "projectKey=$PROJECT_KEY" \
-#            -F "report=@${REPORT_PATH}" \
-#            "$SONAR_URL/api/ce/submit"
 
   ci:
     needs:
