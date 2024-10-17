@@ -60,6 +60,8 @@ jobs:
           distribution: "temurin"
           server-id: github
       - name: Maven Test Coverage
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn --batch-mode clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage
 #      - name: Post coverage report
 #        env:
