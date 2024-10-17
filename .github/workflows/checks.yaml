@@ -61,19 +61,24 @@ jobs:
           server-id: github
       - name: Maven Test Coverage
         run: mvn --batch-mode clean verify -P coverage
-      - name: Post coverage report
+      - name: 'SonarCloud Scan'
+        uses: SonarSource/sonarcloud-github-action@eb211723266fe8e83102bac7361f0a05c3ac1d1b #v3.0.0
         env:
-          SONAR_URL: "https://sonarcloud.io"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          ORGANIZATION: "opentdf"
-          PROJECT_KEY: "opentdf_nifi"
-          REPORT_PATH: "target/site/jacoco-aggregate/jacoco.xml"
-        run: |
-          curl -X POST -u $SONAR_TOKEN: \
-            -F "organization=$ORGANIZATION" \
-            -F "projectKey=$PROJECT_KEY" \
-            -F "report=@${REPORT_PATH}" \
-            "$SONAR_URL/api/ce/submit"
+#      - name: Post coverage report
+#        env:
+#          SONAR_URL: "https://sonarcloud.io"
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          ORGANIZATION: "opentdf"
+#          PROJECT_KEY: "opentdf_nifi"
+#          REPORT_PATH: "target/site/jacoco-aggregate/jacoco.xml"
+#        run: |
+#          curl -X POST -u $SONAR_TOKEN: \
+#            -F "organization=$ORGANIZATION" \
+#            -F "projectKey=$PROJECT_KEY" \
+#            -F "report=@${REPORT_PATH}" \
+#            "$SONAR_URL/api/ce/submit"
 
   ci:
     needs:
