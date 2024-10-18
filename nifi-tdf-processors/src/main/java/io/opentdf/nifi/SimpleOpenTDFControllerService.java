@@ -1,6 +1,5 @@
 package io.opentdf.nifi;
 
-import java.util.Objects;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
@@ -154,19 +153,5 @@ public class SimpleOpenTDFControllerService extends AbstractControllerService im
     @Override
     public Config getConfig() throws ProcessException {
         return config;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        SimpleOpenTDFControllerService that = (SimpleOpenTDFControllerService) o;
-        return Objects.equals(config, that.config);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), config);
     }
 }

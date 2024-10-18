@@ -228,18 +228,4 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return List.of(SSL_CONTEXT_SERVICE, OPENTDF_CONFIG_SERVICE, FLOWFILE_PULL_SIZE);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        AbstractTDFProcessor that = (AbstractTDFProcessor) o;
-        return Objects.equals(sdk, that.sdk);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), sdk);
-    }
 }

@@ -140,9 +140,10 @@ public class ConvertToZTDF extends AbstractToProcessor {
         Map<?,?> assertionMap = gson.fromJson(assertionJson, Map.class);
         AssertionConfig assertionConfig = new AssertionConfig();
         assertionConfig.id = assertionMap.containsKey("id") ? (String)assertionMap.get("id") : null;
-        assertionConfig.type = assertionMap.containsKey("type") ? assertionTypeMap.get(assertionMap.get("type")) : null;
-        assertionConfig.scope =assertionMap.containsKey("scope") ? assertionScopeMap.get(assertionMap.get("scope")) : null;
-        assertionConfig.appliesToState = assertionMap.containsKey("appliesToState") ? assertionAppliesToStateMap.get(assertionMap.get("appliesToState")): null;
+
+        populateFieldFromMap(assertionMap, "type", assertionTypeMap, value -> assertionConfig.type = (AssertionConfig.Type) value);
+        populateFieldFromMap(assertionMap, "scope", assertionScopeMap, value -> assertionConfig.scope = (AssertionConfig.Scope) value);
+        populateFieldFromMap(assertionMap, "appliesToState", assertionAppliesToStateMap, value -> assertionConfig.appliesToState = (AssertionConfig.AppliesToState) value);
         assertionConfig.statement = new AssertionConfig.Statement();
 
         Map<?,?> statementMap = (Map<?,?>)assertionMap.get("statement");
@@ -167,6 +168,14 @@ public class ConvertToZTDF extends AbstractToProcessor {
             throw new Exception("assertion type is required");
         }
         return assertionConfig;
+    }
+
+    private void populateFieldFromMap(Map<?, ?> sourceMap, String key, Map<?, ?> destinationMap, Consumer<Object> setter) {
+        if (sourceMap.containsKey(key)) {
+            setter.accept(destinationMap.get(sourceMap.get(key)));
+        } else {
+            setter.accept(null);
+        }
     }
 
     /**
@@ -239,19 +248,5 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 assertionConfig.assertionKey = new AssertionConfig.AssertionKey(AssertionConfig.AssertionKeyAlg.RS256, privateKey);
             }
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        ConvertToZTDF that = (ConvertToZTDF) o;
-        return Objects.equals(gson, that.gson) && Objects.equals(assertionTypeMap, that.assertionTypeMap) && Objects.equals(assertionScopeMap, that.assertionScopeMap) && Objects.equals(assertionAppliesToStateMap, that.assertionAppliesToStateMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), gson, assertionTypeMap, assertionScopeMap, assertionAppliesToStateMap);
     }
 }
