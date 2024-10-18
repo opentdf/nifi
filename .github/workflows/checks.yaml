@@ -41,9 +41,15 @@ jobs:
           java-version: "21"
           distribution: "temurin"
           server-id: github
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
       - name: Maven Verify
         run: |
-          mvn --batch-mode clean install -s settings.xml
+          mvn --batch-mode clean verify -s settings.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,6 +67,18 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           server-id: github
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
       - name: Maven Test Coverage
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -39,10 +39,10 @@ class ConvertToZTDFTest {
     }
 
     @Test
-    public void testToTDF() throws Exception {
+    void testToTDF() throws Exception {
         TestRunner runner = TestRunners.newTestRunner(MockRunner.class);
         Utils.setupTDFControllerService(runner);
-        Captures captures = commonProcessorTestSetup(runner);
+        commonProcessorTestSetup(runner);
 
         //message one has no attribute
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
@@ -72,7 +72,7 @@ class ConvertToZTDFTest {
 
 
     @Test
-    public void testToTDF_WithAssertionsOn_None_Provided() throws Exception {
+    void testToTDF_WithAssertionsOn_None_Provided() throws Exception {
         TestRunner runner = TestRunners.newTestRunner(MockRunner.class);
         runner.setProperty(ConvertToZTDF.SIGN_ASSERTIONS, "true");
         PrivateKeyService privateKeyService = mock(PrivateKeyService.class);
@@ -95,7 +95,7 @@ class ConvertToZTDFTest {
 
 
     @Test
-    public void testToTDF_WithAssertionsOn_And_Assertions_Provided() throws Exception {
+    void testToTDF_WithAssertionsOn_And_Assertions_Provided() throws Exception {
         TestRunner runner = TestRunners.newTestRunner(MockRunner.class);
         runner.setProperty(ConvertToZTDF.SIGN_ASSERTIONS, "true");
         PrivateKeyService privateKeyService = mock(PrivateKeyService.class);
@@ -130,11 +130,11 @@ class ConvertToZTDFTest {
                         """));
         runner.run(1);
         List<AssertionConfig> assertionConfigList = captures.configArgumentCaptor.getValue().assertionConfigList;
-        assertEquals(assertionConfigList.size(), 1);
+        assertEquals(1, assertionConfigList.size());
         AssertionConfig assertionConfig = assertionConfigList.get(0);
         assertNotNull(assertionConfig, "Assertion configuration present");
         assertNotNull(assertionConfig.assertionKey.key, "signing key present");
-        assertEquals(assertionConfig.assertionKey.alg, AssertionConfig.AssertionKeyAlg.RS256);
+        assertEquals(AssertionConfig.AssertionKeyAlg.RS256, assertionConfig.assertionKey.alg);
         assertEquals("a test assertion", assertionConfig.statement.value);
         assertEquals("sample", assertionConfig.statement.format);
         assertEquals(AssertionConfig.Scope.Payload, assertionConfig.scope);
@@ -207,6 +207,4 @@ class ConvertToZTDFTest {
             return mockTDF;
         }
     }
-
-
 }
