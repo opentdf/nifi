@@ -47,11 +47,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          server-id: github
+      - name: Maven Test Coverage
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn --batch-mode clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -P coverage
 
   ci:
     needs:
       - mavenverify
       - pr
+      - sonarcloud
     runs-on: ubuntu-latest
     if: always()
     steps:
