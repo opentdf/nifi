@@ -209,8 +209,8 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 FlowFile updatedFlowFile = processSession.write(flowFile, (inputStream, outputStream) -> {
                             try {
                                 getTDF().createTDF(inputStream, outputStream, config, sdk.getServices().kas(), sdk.getServices().attributes());
-                            } catch (InterruptedException e) { // Compliant; the interrupted state is restored
-                                getLogger().error("Interrupted!", e);
+                            } catch (InterruptedException e) {
+                                getLogger().error("Interrupted inner", e);
                                 Thread.currentThread().interrupt();
                             } catch (Exception e) {
                                 getLogger().error("error creating ZTDF", e);
@@ -220,6 +220,9 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 );
                 updatedFlowFile = processSession.putAttribute(updatedFlowFile, "mime.type", "application/ztdf+zip");
                 processSession.transfer(updatedFlowFile, REL_SUCCESS);
+            } catch (InterruptedException e) {
+                getLogger().error("Interrupted outer", e);
+                Thread.currentThread().interrupt();
             } catch (Exception e) {
                 getLogger().error(flowFile.getId() + ": error converting plain text to ZTDF", e);
                 processSession.transfer(flowFile, REL_FAILURE);
