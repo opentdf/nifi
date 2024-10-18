@@ -16,6 +16,17 @@
             <url>https://github.com/opentdf/nifi/blob/main/LICENSE</url>
         </license>
     </licenses>
+    <developers>
+        <developer>
+            <organization>Virtru</organization>
+            <organizationUrl>https://www.virtru.com</organizationUrl>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:https://github.com/opentdf/nifi.git</connection>
+        <developerConnection>scm:git:git@github.com:opentdf/nifi.git</developerConnection>
+        <url>https://github.com/opentdf/nifi/tree/main/</url>
+    </scm>
     <properties>
         <nifi.version>1.23.1</nifi.version>
         <junit.version>5.10.0</junit.version>
@@ -121,22 +132,68 @@
     </repositories>
     <profiles>
         <profile>
-            <id>ghcr</id>
+            <id>stage</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <distributionManagement>
                 <repository>
                     <id>github</id>
-                    <name>ghcr</name>
+                    <name>GitHub opentdf Apache Maven Packages</name>
                     <url>https://maven.pkg.github.com/opentdf/nifi</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
                 </repository>
-                <snapshotRepository>
-                    <id>github</id>
-                    <name>ghcr</name>
-                    <url>https://maven.pkg.github.com/opentdf/nifi</url>
-                </snapshotRepository>
             </distributionManagement>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.1.2</version>
+                        <configuration>
+                            <repositoryId>github-pkg</repositoryId>
+                            <url>https://maven.pkg.github.com/opentdf/nifi</url>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Publish to Maven Central Deploy -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.6.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                            <!-- defined in settings.xml -->
+                            <publishingServerId>central</publishingServerId>
+                        </configuration>
+                    </plugin>
+                    <!-- Exclude from lifecycle, phase none -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.1.2</version>
+                        <executions>
+                            <execution>
+                                <id>default-deploy</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>coverage</id>
