@@ -149,17 +149,6 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
-                    <configuration>
-                        <!--When using the maven-surefire-plugin or maven-failsafe-plugin you must not use a forkCount of 0 or set the forkMode to never as this would prevent the execution of the tests with the javaagent set and no coverage would be recorded.-->
-                        <forkCount>1</forkCount>
-                        <!-- this is required for test coverage-->
-<!--                        <argLine>${argLine}</argLine>-->
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.3.1</version>
                     <configuration>
@@ -339,6 +328,20 @@
                                 <goals>
                                     <goal>report-aggregate</goal>
                                 </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <configuration>
+                                    <dataFile>${project.parent.basedir}/target/jacoco.exec</dataFile>
+                                    <outputDirectory>${project.parent.basedir}/target/site/jacoco/</outputDirectory>
+                                    <formats>
+                                        <format>XML</format>
+                                    </formats>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
