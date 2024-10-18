@@ -33,6 +33,24 @@
                 <groupId>org.apache.nifi</groupId>
                 <artifactId>nifi-nar-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>report-aggregate</id>
+                        <phase>none</phase>
+                    </execution>
+                    <execution>
+                        <id>default-report-aggregate</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
