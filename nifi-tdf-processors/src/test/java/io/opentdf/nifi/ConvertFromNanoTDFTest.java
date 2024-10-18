@@ -37,7 +37,7 @@ class ConvertFromNanoTDFTest {
     }
 
     @Test
-    public void testConvertFromTDF() throws Exception {
+    void testConvertFromTDF() throws Exception {
         TestRunner runner = TestRunners.newTestRunner(MockRunner.class);
         SDKBuilder mockSDKBuilder = mock(SDKBuilder.class);
         ((MockRunner) runner.getProcessor()).mockNanoTDF = mockNanoTDF;

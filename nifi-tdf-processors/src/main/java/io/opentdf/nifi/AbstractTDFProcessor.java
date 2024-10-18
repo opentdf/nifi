@@ -28,6 +28,11 @@ import java.util.*;
  */
 public abstract class AbstractTDFProcessor extends AbstractProcessor {
 
+    /**
+     * Configuration property representing the limit on the number of FlowFiles
+     * that can be pulled from the FlowFile queue at a time.
+     * It supports expression language through the variable registry and has a default value of 10.
+     */
     public static final PropertyDescriptor FLOWFILE_PULL_SIZE = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("FlowFile queue pull limit")
             .description("FlowFile queue pull size limit")
@@ -37,6 +42,12 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .build();
 
+    /**
+     * Property descriptor representing an optional SSL Context Service.
+     * This descriptor defines a property that can be used to configure
+     * an SSLContextService, which is optional for the processor. This
+     * service provides the SSL/TLS context needed for secure communication.
+     */
     public static final PropertyDescriptor SSL_CONTEXT_SERVICE = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("SSL Context Service")
             .description("Optional SSL Context Service")
@@ -44,6 +55,13 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             .identifiesControllerService(SSLContextService.class)
             .build();
 
+    /**
+     * Represents a property descriptor for the OpenTDF Config Service.
+     * <p>
+     * This descriptor specifies that the property is required and identifies
+     * a controller service of type {@link OpenTDFControllerService}. The controller service
+     * provides the necessary configuration for the OpenTDF platform.
+     */
     public static final PropertyDescriptor OPENTDF_CONFIG_SERVICE = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("OpenTDF Config Service")
             .description("Controller Service providing OpenTDF Platform Configuration")
@@ -51,30 +69,54 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             .identifiesControllerService(OpenTDFControllerService.class)
             .build();
 
+    /**
+     * Defines a successful relationship for the NiFi processor. This relationship is used to route flow files
+     * that have been successfully processed. Flow files sent to this relationship indicate that the processor
+     * completed its intended action without errors.
+     * <p>
+     * This relationship is commonly used as an output route for data that has passed all validation, transformation,
+     * and processing steps.
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
             .name("success")
             .description("")
             .build();
 
+    /**
+     * Relationship representing a failure in processing flow files.
+     * <p>
+     * This relationship should be used to route flow files that could not
+     * be processed successfully by the processor. The reasons for failure
+     * can vary widely and may include issues like invalid data, processing
+     * errors, or configuration issues.
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
             .name("failure")
             .description("")
             .build();
 
     /**
-     * Get a property value by evaluating attribute expressions if present.
+     * Evaluates the provided PropertyValue if expression language is present,
+     * otherwise returns the original PropertyValue.
      *
-     * @param propertyValue
-     * @return
+     * @param propertyValue The PropertyValue to evaluate or return.
+     * @return The evaluated PropertyValue if expression language is present,
+     *         otherwise the original PropertyValue.
      */
     PropertyValue getPropertyValue(PropertyValue propertyValue) {
         return propertyValue.isExpressionLanguagePresent() ? propertyValue.evaluateAttributeExpressions() : propertyValue;
     }
 
-    Optional<PropertyValue> getPropertyValue(PropertyDescriptor propertyDescriptor, ProcessContext processContext) {
+    /**
+     * Retrieves the value of the specified property from the given process context.
+     *
+     * @param processContext The context from which to retrieve the property value.
+     * @return An Optional containing the PropertyValue if it is set, or an empty Optional otherwise.
+     */
+    Optional<PropertyValue> getPropertyValue(ProcessContext processContext) {
         PropertyValue propertyValue = null;
-        if(processContext.getProperty(propertyDescriptor).isSet()){
-            propertyValue = getPropertyValue(processContext.getProperty(propertyDescriptor));
+        if(processContext.getProperty(ConvertToZTDF.SIGN_ASSERTIONS).isSet()){
+            propertyValue = getPropertyValue(processContext.getProperty(ConvertToZTDF.SIGN_ASSERTIONS));
         }
         return Optional.ofNullable(propertyValue);
     }
@@ -82,10 +124,10 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
     private SDK sdk;
 
     /**
-     * Create a new TDF SDK using the OpenTDFController Service as a source of configuration
+     * Retrieves an instance of the TDF SDK, initializing it if it is not already created.
      *
-     * @param processContext
-     * @return
+     * @param processContext the NiFi ProcessContext providing necessary configuration and controller services.
+     * @return an instance of the initialized SDK.
      */
     SDK getTDFSDK(ProcessContext processContext) {
         if (sdk == null) {
@@ -159,17 +201,45 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
      */
     abstract void processFlowFiles(ProcessContext processContext, ProcessSession processSession, List<FlowFile> flowFiles) throws ProcessException;
 
+    /**
+     * Creates and returns a new instance of TDF.
+     *
+     * @return A new instance of TDF.
+     */
     TDF getTDF() {
         return new TDF();
     }
 
+    /**
+     * Creates and returns a new instance of NanoTDF.
+     *
+     * @return A new instance of NanoTDF.
+     */
     NanoTDF getNanoTDF(){
         return new NanoTDF();
     }
 
+    /**
+     * Retrieves the list of property descriptors that are supported by this processor.
+     *
+     * @return A list containing the supported property descriptors.
+     */
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return Collections.unmodifiableList(Arrays.asList(SSL_CONTEXT_SERVICE, OPENTDF_CONFIG_SERVICE, FLOWFILE_PULL_SIZE));
+        return List.of(SSL_CONTEXT_SERVICE, OPENTDF_CONFIG_SERVICE, FLOWFILE_PULL_SIZE);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AbstractTDFProcessor that = (AbstractTDFProcessor) o;
+        return Objects.equals(sdk, that.sdk);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), sdk);
+    }
 }
