@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/opentdf/nifi/compare/v0.4.0...v0.5.0) (2024-10-18)
+
+
+### Bug Fixes
+
+* Sonarcloud, tests, documentation ([#29](https://github.com/opentdf/nifi/issues/29)) ([87d58ec](https://github.com/opentdf/nifi/commit/87d58ecfe64c414edca8a691417c366fc23545c9))
+
 ## [0.4.0](https://github.com/opentdf/nifi/compare/v0.3.0...v0.4.0) (2024-08-27)
 
 
