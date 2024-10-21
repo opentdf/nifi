@@ -34,37 +34,52 @@ public abstract class AbstractToProcessor extends AbstractTDFProcessor{
         return Collections.unmodifiableList(Arrays.asList(SSL_CONTEXT_SERVICE, OPENTDF_CONFIG_SERVICE, FLOWFILE_PULL_SIZE, KAS_URL));
     }
 
-    /**{
-     * Get the kas urls from a flowfile attribute or if none present fallback to processor configuration KAS URL;
-     * format is a comma separated list
-     * @param flowFile
-     * @param processContext
-     * @return
-     * @throws Exception
+    /**
+     * Retrieves a list of KAS (Key Access Service) URLs either from the flow file attributes or from the process context.
+     * If the KAS URL is not provided through the flow file attribute and is not set in the process context, an exception is thrown.
+     *
+     * @param flowFile       the flow file from which KAS URL attributes are retrieved.
+     * @param processContext the process context to get the default KAS URL if not available in the flow file.
+     * @return a list of KAS URLs.
+     * @throws Exception if no KAS URL is provided via the flow file or the default in the process context, or if the KAS URLs provided are empty.
      */
-    List<String> getKasUrl(FlowFile flowFile, ProcessContext processContext) throws Exception{
+    List<String> getKasUrl(FlowFile flowFile, ProcessContext processContext) throws Exception {
         String kasUrlAttribute = flowFile.getAttribute(KAS_URL_ATTRIBUTE);
-        //check kas url
+        // Check kas url
         if (!processContext.getProperty(KAS_URL).isSet() && kasUrlAttribute == null) {
             throw new Exception("no " + KAS_URL_ATTRIBUTE + " flowfile attribute and no default KAS URL configured");
         }
         String kasUrlValues = kasUrlAttribute != null ? kasUrlAttribute : getPropertyValue(processContext.getProperty(KAS_URL)).getValue();
-        List<String> kasUrls = Arrays.stream(kasUrlValues.split(",")).filter(x->!x.isEmpty()).collect(Collectors.toList());
-        if (kasUrlValues.isEmpty()){
+        List<String> kasUrls = Arrays.stream(kasUrlValues.split(","))
+                .filter(x -> !x.isEmpty())
+                .toList(); // Use Stream.toList() for an unmodifiable list
+        if (kasUrlValues.isEmpty()) {
             throw new Exception("no KAS Urls provided");
         }
         return kasUrls;
     }
 
+    /**
+     * Converts a list of KAS (Key Access Service) URLs into a list of Config.KASInfo objects.
+     *
+     * @param kasUrls a list of strings representing the KAS URLs
+     * @return a list of Config.KASInfo objects with each object's URL field set to the corresponding string from the input list
+     */
     List<Config.KASInfo> getKASInfoFromKASURLs(List<String> kasUrls){
-        return kasUrls.stream().map(x->{ var ki = new Config.KASInfo(); ki.URL=x; return ki;}).collect(Collectors.toList());
+        return kasUrls.stream().map(x -> {
+            var ki = new Config.KASInfo();
+            ki.URL = x;
+            return ki;
+        }).toList();
     }
 
     /**
-     * Get data attributes on a FlowFile from attribute value
-     * @param flowFile
-     * @return
-     * @throws Exception
+     * Extracts and returns a set of data attributes from the given FlowFile's attribute specified by TDF_ATTRIBUTE.
+     * The attributes are split by commas and filtered to remove empty strings.
+     *
+     * @param flowFile the FlowFile from which to retrieve the data attributes.
+     * @return a set of data attributes extracted from the given FlowFile.
+     * @throws Exception if no data attributes are provided via the TDF_ATTRIBUTE FlowFile attribute.
      */
     Set<String> getDataAttributes(FlowFile flowFile) throws Exception{
         Set<String> dataAttributes = Arrays.stream((flowFile.getAttribute(TDF_ATTRIBUTE) == null ? "" :
