@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/opentdf/nifi/compare/v0.5.0...v0.6.0) (2024-10-21)
+
+
+### Bug Fixes
+
+* Maven plugins and vulnerability fix ([#32](https://github.com/opentdf/nifi/issues/32)) ([fda54ff](https://github.com/opentdf/nifi/commit/fda54ff5f45b1fcf7ef56f949e6f4dfa9929bfbb))
+
 ## [0.5.0](https://github.com/opentdf/nifi/compare/v0.4.0...v0.5.0) (2024-10-18)
 
 
