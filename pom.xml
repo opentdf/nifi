@@ -6,10 +6,11 @@
 
     <groupId>io.opentdf.nifi</groupId>
     <artifactId>nifi-pom</artifactId>
-    <version>0.6.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
+    <version>0.7.0-SNAPSHOT</version><!-- {x-version-update:nifi:current} -->
     <name>nifi-pom</name>
-    <packaging>pom</packaging>
     <description>NiFi processors for OpenTDF</description>
+    <url>https://github.com/opentdf/nifi</url>
+    <packaging>pom</packaging>
     <licenses>
         <license>
             <name>Clear BSD License</name>
@@ -89,6 +90,16 @@
                 <artifactId>mockito-junit-jupiter</artifactId>
                 <version>5.2.0</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>3.25.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>2.9.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
