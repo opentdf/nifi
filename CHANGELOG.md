@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/opentdf/nifi/compare/v0.6.0...v0.7.0) (2024-10-23)
+
+
+### Bug Fixes
+
+* Add default constructors to processors and controller services ([#36](https://github.com/opentdf/nifi/issues/36)) ([7ac491c](https://github.com/opentdf/nifi/commit/7ac491c1d1ac566c137487b1e8a41bfbca703789))
+
 ## [0.6.0](https://github.com/opentdf/nifi/compare/v0.5.0...v0.6.0) (2024-10-21)
 
 
