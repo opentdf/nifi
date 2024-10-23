@@ -25,6 +25,13 @@ import java.util.List;
 public class ConvertFromNanoTDF extends AbstractTDFProcessor {
 
     /**
+     * Default constructor for ConvertFromNanoTDF.
+     */
+    public ConvertFromNanoTDF() {
+        super();
+    }
+
+    /**
      * Processes the provided list of flow files by decrypting their content using the NanoTDF protocol.
      * If decryption succeeds, the flow file is routed to the success relationship; otherwise, it is routed to the failure relationship.
      *

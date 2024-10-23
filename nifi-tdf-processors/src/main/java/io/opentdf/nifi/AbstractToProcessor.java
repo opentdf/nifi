@@ -21,6 +21,16 @@ public abstract class AbstractToProcessor extends AbstractTDFProcessor{
     static final String TDF_ATTRIBUTE = "tdf_attribute";
     static final String TDF_ASSERTION_PREFIX = "tdf_assertion_";
 
+    /**
+     * Default constructor for AbstractToProcessor.
+     */
+    public AbstractToProcessor() {
+        super();
+    }
+
+    /**
+     * Property descriptor for the Key Access Server (KAS) URL configuration.
+     */
     public static final PropertyDescriptor KAS_URL = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("KAS URL")
             .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)

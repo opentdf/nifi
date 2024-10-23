@@ -41,6 +41,12 @@ import java.util.List;
 @Tags({"ZTDF", "Zero Trust Data Format", "OpenTDF", "Decrypt", "Data Centric Security"})
 public class ConvertFromZTDF extends AbstractTDFProcessor {
 
+    /**
+     * Default constructor for ConvertFromZTDF.
+     */
+    public ConvertFromZTDF() {
+        super();
+    }
 
     /**
      * Processes a list of flow files by decrypting their content using the TDF (Trusted Data Format) SDK.

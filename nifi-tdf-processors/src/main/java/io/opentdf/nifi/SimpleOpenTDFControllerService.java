@@ -23,6 +23,13 @@ import java.util.List;
 public class SimpleOpenTDFControllerService extends AbstractControllerService implements OpenTDFControllerService {
 
     /**
+     * Default constructor for SimpleOpenTDFControllerService.
+     */
+    public SimpleOpenTDFControllerService() {
+        super();
+    }
+
+    /**
      * The endpoint of the OpenTDF platform in GRPC compatible format, excluding the protocol prefix.
      * This is a required property and supports expression language within the scope of the variable registry.
      */

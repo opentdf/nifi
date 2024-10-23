@@ -29,6 +29,13 @@ import java.util.*;
 public abstract class AbstractTDFProcessor extends AbstractProcessor {
 
     /**
+     * Default constructor for AbstractTDFProcessor.
+     */
+    public AbstractTDFProcessor() {
+        super();
+    }
+
+    /**
      * Configuration property representing the limit on the number of FlowFiles
      * that can be pulled from the FlowFile queue at a time.
      * It supports expression language through the variable registry and has a default value of 10.
