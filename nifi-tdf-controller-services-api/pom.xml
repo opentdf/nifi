@@ -11,6 +11,9 @@
     <name>nifi-tdf-controller-services-api</name>
     <description>TDF NiFi Controller Service API</description>
     <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.nifi</groupId>

@@ -50,6 +50,13 @@ import java.util.Set;
 public class ConvertToNanoTDF extends AbstractToProcessor {
 
     /**
+     * Default constructor for ConvertToNanoTDF.
+     */
+    public ConvertToNanoTDF() {
+        super();
+    }
+
+    /**
      * Defines a relationship indicating that NanoTDF creation has failed
      * due to the content size exceeding the maximum allowed NanoTDF size threshold.
      */

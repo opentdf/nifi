@@ -53,6 +53,13 @@ import java.util.function.Consumer;
 public class ConvertToZTDF extends AbstractToProcessor {
 
     /**
+     * Default constructor for ConvertToZTDF.
+     */
+    public ConvertToZTDF() {
+        super();
+    }
+
+    /**
      * Property descriptor for the "Sign Assertions" feature in the ConvertToZTDF processor. This property allows specifying whether 
      * the assertions should be signed or not. It is not a required property and defaults to "false".
      * <p>
