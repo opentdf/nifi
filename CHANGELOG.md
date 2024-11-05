@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/opentdf/nifi/compare/v0.7.0...v0.7.1) (2024-10-30)
+
+
+### Miscellaneous Chores
+
+* release 0.7.1 ([#41](https://github.com/opentdf/nifi/issues/41)) ([a0cc42a](https://github.com/opentdf/nifi/commit/a0cc42aa8a93a3bb1a2819964adf12971963697b))
+
 ## [0.7.0](https://github.com/opentdf/nifi/compare/v0.6.0...v0.7.0) (2024-10-23)
 
 
