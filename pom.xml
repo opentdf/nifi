@@ -66,7 +66,7 @@
             <dependency>
                 <groupId>io.opentdf.platform</groupId>
                 <artifactId>sdk</artifactId>
-                <version>0.7.3</version>
+                <version>0.7.5</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
