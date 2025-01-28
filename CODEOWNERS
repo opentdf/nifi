@@ -2,6 +2,10 @@
 
 * @opentdf/opentdf-nifi @opentdf/architecture
 
+## General
+
+*pom.xml       @opentdf/architecture @opentdf/security
+
 ## High Security Area
 
 CODEOWNERS     @opentdf/architecture @opentdf/security
