@@ -1,8 +1,10 @@
 package io.opentdf.nifi;
 
 import io.opentdf.platform.sdk.Config;
+import io.opentdf.platform.sdk.Config.TDFConfig;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.TDF;
+import io.opentdf.platform.sdk.KeyType;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
@@ -65,14 +67,13 @@ public class ConvertFromZTDF extends AbstractTDFProcessor {
     @Override
     void processFlowFiles(ProcessContext processContext, ProcessSession processSession, List<FlowFile> flowFiles) throws ProcessException {
         SDK sdk = getTDFSDK(processContext);
-        //TODO add assertion verification key list population
-        List<Config.AssertionVerificationKeys> assertionVerificationKeysList = new ArrayList<>();
+        
         for (FlowFile flowFile : flowFiles) {
             try {
                 try (SeekableByteChannel seekableByteChannel = new SeekableInMemoryByteChannel(readEntireFlowFile(flowFile, processSession))) {
                     FlowFile updatedFlowFile = processSession.write(flowFile, outputStream -> {
                         try {
-                            TDF.Reader reader = getTDF().loadTDF(seekableByteChannel, sdk.getServices().kas(), assertionVerificationKeysList.toArray(new Config.AssertionVerificationKeys[0]));
+                            TDF.Reader reader = getTDF().loadTDF(seekableByteChannel, sdk.getServices().kas(), Config.newTDFReaderConfig(Config.withDisableAssertionVerification(true)), sdk.getServices().kasRegistry(), sdk.getPlatformUrl());
                             reader.readPayload(outputStream);
                         } catch (Exception e) {
                             getLogger().error("error decrypting ZTDF", e);

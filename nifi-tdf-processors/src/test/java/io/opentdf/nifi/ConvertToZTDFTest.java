@@ -133,8 +133,8 @@ class ConvertToZTDFTest {
         assertEquals(1, assertionConfigList.size());
         AssertionConfig assertionConfig = assertionConfigList.get(0);
         assertNotNull(assertionConfig, "Assertion configuration present");
-        assertNotNull(assertionConfig.assertionKey.key, "signing key present");
-        assertEquals(AssertionConfig.AssertionKeyAlg.RS256, assertionConfig.assertionKey.alg);
+        assertNotNull(assertionConfig.signingKey.key, "signing key present");
+        assertEquals(AssertionConfig.AssertionKeyAlg.RS256, assertionConfig.signingKey.alg);
         assertEquals("a test assertion", assertionConfig.statement.value);
         assertEquals("sample", assertionConfig.statement.format);
         assertEquals(AssertionConfig.Scope.Payload, assertionConfig.scope);

@@ -255,7 +255,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 getLogger().debug("adding signing configuration for assertion");
                 //TODO assumes RSA256 signing key
                 PrivateKey privateKey = privateKeyService.getPrivateKey();
-                assertionConfig.assertionKey = new AssertionConfig.AssertionKey(AssertionConfig.AssertionKeyAlg.RS256, privateKey);
+                assertionConfig.signingKey = new AssertionConfig.AssertionKey(AssertionConfig.AssertionKeyAlg.RS256, privateKey);
             }
         }
     }
