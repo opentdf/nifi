@@ -1,8 +1,12 @@
 package io.opentdf.nifi;
 
+import com.nimbusds.jose.JOSEException;
+import io.opentdf.platform.policy.kasregistry.KeyAccessServerRegistryServiceGrpc;
 import io.opentdf.platform.sdk.*;
+import io.opentdf.platform.sdk.Config;
 import io.opentdf.platform.sdk.TDF.Reader;
 import nl.altindag.ssl.util.KeyStoreUtils;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.apache.nifi.ssl.SSLContextService;
 import org.apache.nifi.util.MockFlowFile;
@@ -14,11 +18,17 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,18 +73,24 @@ class ConvertFromZTDFTest {
 
 
         runner.assertValid();
-
+        String platformEndpoint = "http://platform";
         SDK.Services mockServices = mock(SDK.Services.class);
         SDK.KAS mockKAS = mock(SDK.KAS.class);
         when(mockSDK.getServices()).thenReturn(mockServices);
         when(mockServices.kas()).thenReturn(mockKAS);
-        when(mockSDKBuilder.platformEndpoint("http://platform")).thenReturn(mockSDKBuilder);
+        when(mockSDK.getPlatformUrl()).thenReturn(platformEndpoint);
+        when(mockSDKBuilder.platformEndpoint(platformEndpoint)).thenReturn(mockSDKBuilder);
         when(mockSDKBuilder.clientSecret("my-client", "123-456")).thenReturn(mockSDKBuilder);
         when(mockSDKBuilder.sslFactoryFromKeyStore(TRUST_STORE_PATH, TRUST_STORE_PASSWORD)).thenReturn(mockSDKBuilder);
         when(mockSDKBuilder.build()).thenReturn(mockSDK);
 
         ArgumentCaptor<SeekableByteChannel> seekableByteChannelArgumentCaptor = ArgumentCaptor.forClass(SeekableByteChannel.class);
         ArgumentCaptor<SDK.KAS> kasArgumentCaptor = ArgumentCaptor.forClass(SDK.KAS.class);
+        ArgumentCaptor<Config.TDFReaderConfig> tdfReaderConfigArgumentCaptor = ArgumentCaptor.forClass(Config.TDFReaderConfig.class);
+        ArgumentCaptor<KeyAccessServerRegistryServiceGrpc.KeyAccessServerRegistryServiceFutureStub> keyAccessServerRegistryServiceGrpcArgumentCaptor =
+                ArgumentCaptor.forClass(KeyAccessServerRegistryServiceGrpc.KeyAccessServerRegistryServiceFutureStub.class);
+        ArgumentCaptor<String> platformUrlCaptor = ArgumentCaptor.forClass(String.class);
+
         Reader mockReader = mock(Reader.class);
 
         ArgumentCaptor<OutputStream> outputStreamArgumentCaptor = ArgumentCaptor.forClass(OutputStream.class);
@@ -96,7 +112,10 @@ class ConvertFromZTDFTest {
             assertSame(mockKAS, kas, "Expected KAS passed in");
             return mockReader;
         }).when(mockTDF).loadTDF(seekableByteChannelArgumentCaptor.capture(),
-                kasArgumentCaptor.capture()
+                kasArgumentCaptor.capture(),
+                tdfReaderConfigArgumentCaptor.capture(),
+                keyAccessServerRegistryServiceGrpcArgumentCaptor.capture(),
+                platformUrlCaptor.capture()
                 );
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
         MockFlowFile messageTwo = runner.enqueue("message two".getBytes());
@@ -112,6 +131,13 @@ class ConvertFromZTDFTest {
 
         assertTrue(messages.contains("message one"));
         assertTrue(messages.contains("message two"));
+
+        assertEquals(platformEndpoint, platformUrlCaptor.getValue());
+        // disableAssertionVerification is a private field
+        Field field = Config.TDFReaderConfig.class.getDeclaredField("disableAssertionVerification");
+        field.setAccessible(true);
+        boolean disableAssertionVerification = (boolean) field.get(tdfReaderConfigArgumentCaptor.getValue());
+        assertTrue(disableAssertionVerification);
     }
 
     public static class MockRunner extends ConvertFromZTDF {
