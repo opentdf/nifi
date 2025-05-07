@@ -4,6 +4,7 @@ import com.nimbusds.jose.JOSEException;
 import io.opentdf.platform.policy.attributes.AttributesServiceGrpc;
 import io.opentdf.platform.sdk.*;
 import io.opentdf.platform.sdk.Config;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.key.service.api.PrivateKeyService;
 import org.apache.nifi.processor.ProcessContext;
@@ -146,7 +147,7 @@ class ConvertToZTDFTest {
         assertEquals(1, flowFileList.size(), "one success flow file");
     }
 
-    private Captures commonProcessorTestSetup(TestRunner runner) throws IOException, JOSEException, ExecutionException, InterruptedException {
+    private Captures commonProcessorTestSetup(TestRunner runner) throws IOException, JOSEException, ExecutionException, InterruptedException, DecoderException {
         ((ConvertToZTDFTest.MockRunner) runner.getProcessor()).mockSDK = mockSDK;
         ((ConvertToZTDFTest.MockRunner) runner.getProcessor()).mockTDF = mockTDF;
         runner.setProperty(ConvertToZTDF.KAS_URL, "https://kas1");
