@@ -1,7 +1,7 @@
 version: '3'
 services:
   opentdf-nifi:
-    image: ghcr.io/ttschampel/nifi/nifi-1.25.0-jre17:latest
+    image: opentdf-nifi:local
     restart: always
     ulimits:
       nofile:
