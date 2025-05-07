@@ -75,6 +75,9 @@ public class ConvertFromZTDF extends AbstractTDFProcessor {
                         try {
                             TDF.Reader reader = getTDF().loadTDF(seekableByteChannel, sdk.getServices().kas(), Config.newTDFReaderConfig(Config.withDisableAssertionVerification(true)), sdk.getServices().kasRegistry(), sdk.getPlatformUrl());
                             reader.readPayload(outputStream);
+                        } catch (InterruptedException e) {
+                            getLogger().error("error decrypting ZTDF", e);
+                            Thread.currentThread().interrupt();
                         } catch (Exception e) {
                             getLogger().error("error decrypting ZTDF", e);
                             throw new IOException(e);
