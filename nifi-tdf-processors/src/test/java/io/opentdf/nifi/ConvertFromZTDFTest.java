@@ -96,7 +96,7 @@ class ConvertFromZTDFTest {
             assertSame(mockKAS, kas, "Expected KAS passed in");
             return mockReader;
         }).when(mockTDF).loadTDF(seekableByteChannelArgumentCaptor.capture(),
-                kasArgumentCaptor.capture()
+                kasArgumentCaptor.capture(), any(), any(), any()
                 );
         MockFlowFile messageOne = runner.enqueue("message one".getBytes());
         MockFlowFile messageTwo = runner.enqueue("message two".getBytes());
