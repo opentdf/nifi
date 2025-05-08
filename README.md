@@ -47,6 +47,12 @@ Upload and use this template in NiFi:
     export GITHUB_TOKEN=your gh token
     make compose-package
     ```
+1. Build local Nifi Image
+
+    ```shell
+    make nifi-image
+    ```
+
 1. Start docker compose
     ```shell
     docker compose up
