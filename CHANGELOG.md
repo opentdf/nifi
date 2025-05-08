@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/opentdf/nifi/compare/v0.7.1...v0.8.0) (2025-05-08)
+
+
+### Bug Fixes
+
+* **sdk:** update opentdf java sdk to 0.7.9 ([#51](https://github.com/opentdf/nifi/issues/51)) ([4375d4f](https://github.com/opentdf/nifi/commit/4375d4ff036ca4ca85491cbd3f81a81e54c7167e))
+
 ## [0.7.1](https://github.com/opentdf/nifi/compare/v0.7.0...v0.7.1) (2024-10-30)
 
 
