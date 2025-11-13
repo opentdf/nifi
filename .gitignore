@@ -1,2 +1,5 @@
 /.idea/
 /**/target/
+/nifi-rel-nifi-*/
+Dockerfile*
+nifi-**.tar.gz 
