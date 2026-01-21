@@ -1,4 +1,2 @@
 io.opentdf.nifi.ConvertFromZTDF
 io.opentdf.nifi.ConvertToZTDF
-io.opentdf.nifi.ConvertFromNanoTDF
-io.opentdf.nifi.ConvertToNanoTDF
