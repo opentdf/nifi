@@ -1,6 +1,5 @@
 package io.opentdf.nifi;
 
-import io.opentdf.platform.sdk.NanoTDF;
 import io.opentdf.platform.sdk.SDK;
 import io.opentdf.platform.sdk.SDKBuilder;
 import io.opentdf.platform.sdk.TDF;
@@ -215,15 +214,6 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
      */
     TDF getTDF() {
         return new TDF();
-    }
-
-    /**
-     * Creates and returns a new instance of NanoTDF.
-     *
-     * @return A new instance of NanoTDF.
-     */
-    NanoTDF getNanoTDF(){
-        return new NanoTDF();
     }
 
     /**

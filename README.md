@@ -5,9 +5,6 @@ Components:
 * "Zero Trust Data Format" (ZTDF) Processors: 
   * [ConvertToZTDF](./nifi-tdf-processors/src/main/java/io/opentdf/nifi/ConvertToZTDF.java): A NiFi processor that converts FlowFile content to ZTDF format. 
   * [ConvertFromZTDF](./nifi-tdf-processors/src/main/java/io/opentdf/nifi/ConvertFromZTDF.java): A NiFi processor that converts ZTDF formatted FlowFile content to its plaintext representation
-* NanoTDF Processors ([See NanoTDF Specification](https://github.com/opentdf/spec/tree/main/schema/nanotdf#readme)):
-    * [ConvertToNanoTDF](./nifi-tdf-processors/src/main/java/io/opentdf/nifi/ConvertToNanoTDF.java): A NiFi processor that converts FlowFile content to NanoTDF format. 
-    * [ConvertFromNanoTDF](./nifi-tdf-processors/src/main/java/io/opentdf/nifi/ConvertFromNanoTDF.java): A NiFi processor that converts NanoTDF formatted FlowFile content to its plaintext representation
 
 * Controller Services:
   * [OpenTDFControllerService](./nifi-tdf-controller-services-api/src/main/java/io/opentdf/nifi/OpenTDFControllerService.java): A NiFi controller service providing OpenTDF Platform Configuration
@@ -19,22 +16,16 @@ SSL Context Service.
 
 ## Example
 
-See [An Sample NiFi FlowFile Template using ZTDF/NanoTDF Processors](./deploy/Example_ZTDF_NanoTDF.xml)
-
-Upload and use this template in NiFi:
+To use these processors in NiFi:
 * Configure the OpenTDFControllerService properties
   * set then OpenTDF compliant endpoint
   * set OIDC Client credentials (client id and client secret)
   * set the data policy (UpdateAttribute Processor)
-  * set the KAS URL: ConvertToZTDF , ConvertToNanoTDF processors
+  * set the KAS URL: ConvertToZTDF processor
 
 #### FlowChart: Generic ZTDF Nifi Flows
 
 ![diagram](./docs/diagrams/generic_ztdf_nifi_flows.svg)
-
-#### FlowChart: Generic NanoTDF NiFi Flows
-
-![diagram](./docs/diagrams/generic_nanotdf_nifi_flows.svg)
 
 
 # Quick Start - Docker Compose
