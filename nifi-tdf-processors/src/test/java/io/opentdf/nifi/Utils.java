@@ -12,6 +12,7 @@ import static io.opentdf.nifi.SimpleOpenTDFControllerService.USE_PLAINTEXT;
 public class Utils {
 
     static void setupTDFControllerService(TestRunner runner) throws Exception {
+            runner.setValidateExpressionUsage(false);
             SimpleOpenTDFControllerService tdfControllerService = new SimpleOpenTDFControllerService();
             Map<String, String> controllerPropertyMap = new HashMap<>();
             controllerPropertyMap.put(PLATFORM_ENDPOINT.getName(), "http://platform");

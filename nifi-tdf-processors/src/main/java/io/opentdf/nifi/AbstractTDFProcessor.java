@@ -43,7 +43,7 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             .name("FlowFile queue pull limit")
             .description("FlowFile queue pull size limit")
             .required(true)
-            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+            .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
             .defaultValue("10")
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .build();

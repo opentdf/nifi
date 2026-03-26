@@ -33,7 +33,7 @@ public abstract class AbstractToProcessor extends AbstractTDFProcessor{
      */
     public static final PropertyDescriptor KAS_URL = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("KAS URL")
-            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+            .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
             .description("The KAS Url to use for encryption; this is a default if the kas_url attribute is not present in the flow file")
             .required(false)
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
