@@ -60,15 +60,9 @@ public class ConvertToZTDF extends AbstractToProcessor {
     }
 
     /**
-     * Property descriptor for the "Sign Assertions" feature in the ConvertToZTDF processor. This property allows specifying whether 
-     * the assertions should be signed or not. It is not a required property and defaults to "false".
-     * <p>
-     * - Name: Sign Assertions
-     * - Description: sign assertions
-     * - Required: false
-     * - Default Value: false
-     * - Allowable Values: true, false
-     * - Expression Language Supported: {@link ExpressionLanguageScope#ENVIRONMENT}
+     * Property descriptor for the "Enable Encryption" feature in the ConvertToZTDF processor.
+     * When false, the flow file passes through without TDF encryption (tag-only / ABAC-only mode).
+     * Required, defaults to "true". Supports ENVIRONMENT-scoped expression language.
      */
     public static final PropertyDescriptor ENABLE_ENCRYPTION = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("Enable Encryption")
