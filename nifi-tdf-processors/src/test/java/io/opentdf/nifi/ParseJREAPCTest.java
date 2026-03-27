@@ -104,7 +104,7 @@ class ParseJREAPCTest {
     }
 
     @Test
-    void onTrigger_validMessageGoesToSuccess() {
+    void onTrigger_validMessageGoesToSuccess() throws Exception {
         byte[] payload = "tactical payload".getBytes();
         byte[] message = buildMessage(0x0700, 1, 0x00, 7, new byte[8], new byte[8], 1700000000L, 5, payload);
 
