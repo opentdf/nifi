@@ -96,6 +96,13 @@
             <version>1.14.17</version>
             <scope>test</scope>
         </dependency>
+        <!-- TlsConfiguration referenced by SSLContextService; not a transitive dep in NiFi 2.x -->
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-security-utils-api</artifactId>
+            <version>${nifi.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
