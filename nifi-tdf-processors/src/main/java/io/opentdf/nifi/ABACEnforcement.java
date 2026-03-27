@@ -216,6 +216,9 @@ public class ABACEnforcement extends AbstractTDFProcessor {
                     String trimmed = fqn.trim();
                     if (!trimmed.isEmpty()) raBuilder.addAttributeValueFqns(trimmed);
                 }
+                if (raBuilder.getAttributeValueFqnsCount() == 0) {
+                    throw new ProcessException("Resource attribute FQN list is empty after parsing: " + attrFqnsCsv);
+                }
                 ResourceAttribute resourceAttribute = raBuilder.build();
 
                 // Build action (TRANSMIT for data forwarding)
