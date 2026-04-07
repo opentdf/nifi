@@ -15,7 +15,7 @@ Integration of the [OpenTDF Platform](https://github.com/opentdf/platform) into 
 
 | Processor | Description |
 |-----------|-------------|
-| [ParseJREAPC](./nifi-tdf-processors/src/main/java/io/opentdf/nifi/ParseJREAPC.java) | Parses JREAP-C (Joint Range Extension Applications Protocol Category C) binary message headers and extracts policy-relevant fields — classification, J-series word type, track number, source/destination addressing, and timestamp — as flow file attributes. Optionally populates `tdf_attribute` automatically from the classification level when a **Classification Attribute Namespace** is configured, making it directly consumable by `ABACEnforcement` downstream. Payload bytes are passed through unmodified. |
+| [ParseJREAPC](./nifi-jreapc-processors/src/main/java/io/opentdf/nifi/ParseJREAPC.java) | Parses JREAP-C (Joint Range Extension Applications Protocol Category C) binary message headers and extracts policy-relevant fields — classification, J-series word type, track number, source/destination addressing, and timestamp — as flow file attributes. Optionally populates `tdf_attribute` automatically from the classification level when a **Classification Attribute Namespace** is configured, making it directly consumable by `ABACEnforcement` downstream. Payload bytes are passed through unmodified. |
 | [ABACEnforcement](./nifi-tdf-processors/src/main/java/io/opentdf/nifi/ABACEnforcement.java) | Calls the OpenTDF Authorization Service `GetDecisions` endpoint to make an ABAC permit/deny decision for the flow file. Uses the `tdf_attribute` flow file attribute as the resource context. Routes to **permit**, **deny**, or **failure** relationships. Supports a **Fail Open** property to control behavior when the authorization service is unreachable. Designed to enforce policy on binary protocol streams (JREAP-C, sensor feeds, telemetry) that cannot be encrypted as TDF but still require access control. |
 
 ### Controller Services
@@ -66,6 +66,26 @@ To use these processors in NiFi:
 
 ![diagram](./docs/diagrams/generic_ztdf_nifi_flows.svg)
 
+
+## Testing
+
+Unit and integration tests are included for all processors. Run the full suite with:
+
+```shell
+export GITHUB_ACTOR=your-gh-username
+export GITHUB_TOKEN=your-gh-token
+mvn --batch-mode clean verify -s settings.xml
+```
+
+Test coverage includes:
+
+| Test class | What it covers |
+|------------|----------------|
+| `ParseJREAPCTest` | 32-byte header parsing: all classification codes, word types, exercise/simulation flags, `tdf_attribute` slug generation, content pass-through |
+| `ABACEnforcementTest` | Permit, deny, fail-open/closed, missing/blank/empty `tdf_attribute`, default resource attributes, empty decision list, multi-decision deny-wins |
+| `JREAPCPipelineTest` | Full pipeline chain: `ParseJREAPC` → `ABACEnforcement` → `ConvertToZTDF` with synthetic JREAP-C binary data, asserting byte-for-byte preservation through all stages |
+| `ConvertToZTDFTest` | TDF wrapping, attribute binding, assertion signing |
+| `ConvertFromZTDFTest` | TDF decryption routing |
 
 # Quick Start - Docker Compose
 
