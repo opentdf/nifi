@@ -43,7 +43,7 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
             .name("FlowFile queue pull limit")
             .description("FlowFile queue pull size limit")
             .required(true)
-            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+            .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
             .defaultValue("10")
             .addValidator(StandardValidators.INTEGER_VALIDATOR)
             .build();
@@ -192,7 +192,7 @@ public abstract class AbstractTDFProcessor extends AbstractProcessor {
 
     @Override
     public void onTrigger(ProcessContext processContext, ProcessSession processSession) throws ProcessException {
-        List<FlowFile> flowFiles = processSession.get(processContext.getProperty(FLOWFILE_PULL_SIZE).asInteger());
+        List<FlowFile> flowFiles = processSession.get(processContext.getProperty(FLOWFILE_PULL_SIZE).evaluateAttributeExpressions().asInteger());
         if (!flowFiles.isEmpty()) {
             processFlowFiles(processContext, processSession, flowFiles);
         }

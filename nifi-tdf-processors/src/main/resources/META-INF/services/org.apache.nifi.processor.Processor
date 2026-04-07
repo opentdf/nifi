@@ -1,2 +1,3 @@
 io.opentdf.nifi.ConvertFromZTDF
 io.opentdf.nifi.ConvertToZTDF
+io.opentdf.nifi.ABACEnforcement

@@ -60,23 +60,28 @@ public class ConvertToZTDF extends AbstractToProcessor {
     }
 
     /**
-     * Property descriptor for the "Sign Assertions" feature in the ConvertToZTDF processor. This property allows specifying whether 
-     * the assertions should be signed or not. It is not a required property and defaults to "false".
-     * <p>
-     * - Name: Sign Assertions
-     * - Description: sign assertions
-     * - Required: false
-     * - Default Value: false
-     * - Allowable Values: true, false
-     * - Expression Language Supported: {@link ExpressionLanguageScope#VARIABLE_REGISTRY}
+     * Property descriptor for the "Enable Encryption" feature in the ConvertToZTDF processor.
+     * When false, the flow file passes through without TDF encryption (tag-only / ABAC-only mode).
+     * Required, defaults to "true". Supports ENVIRONMENT-scoped expression language.
      */
+    public static final PropertyDescriptor ENABLE_ENCRYPTION = new org.apache.nifi.components.PropertyDescriptor.Builder()
+            .name("Enable Encryption")
+            .description("When false, the flow file passes through without TDF encryption. " +
+                    "Use this for ABAC policy enforcement only (tag-only mode), mirroring the " +
+                    "GATEWAY_ABAC_ENCRYPT_EMAIL=0 behavior in the Virtru Gateway.")
+            .required(true)
+            .defaultValue("true")
+            .allowableValues("true", "false")
+            .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
+            .build();
+
     public static final PropertyDescriptor SIGN_ASSERTIONS = new org.apache.nifi.components.PropertyDescriptor.Builder()
             .name("Sign Assertions")
             .description("sign assertions")
             .required(false)
             .defaultValue("false")
             .allowableValues("true", "false")
-            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+            .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
             .build();
 
     /**
@@ -94,7 +99,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
             .required(true)
             .identifiesControllerService(PrivateKeyService.class)
             .dependsOn(SIGN_ASSERTIONS, new AllowableValue("true"))
-            .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+            .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
             .build();
 
 
@@ -118,6 +123,7 @@ public class ConvertToZTDF extends AbstractToProcessor {
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         List<PropertyDescriptor> propertyDescriptors = new ArrayList<>(super.getSupportedPropertyDescriptors());
+        propertyDescriptors.add(ENABLE_ENCRYPTION);
         propertyDescriptors.add(PRIVATE_KEY_CONTROLLER_SERVICE);
         propertyDescriptors.add(SIGN_ASSERTIONS);
         return Collections.unmodifiableList(propertyDescriptors);
@@ -195,6 +201,11 @@ public class ConvertToZTDF extends AbstractToProcessor {
      */
     @Override
     void processFlowFiles(ProcessContext processContext, ProcessSession processSession, List<FlowFile> flowFiles) throws ProcessException {
+        Boolean encryptionEnabled = processContext.getProperty(ENABLE_ENCRYPTION).evaluateAttributeExpressions().asBoolean();
+        if (encryptionEnabled == null) {
+            throw new ProcessException("Enable Encryption property did not resolve to 'true' or 'false'");
+        }
+
         SDK sdk = getTDFSDK(processContext);
         for (final FlowFile flowFile : flowFiles) {
             try {
@@ -203,6 +214,9 @@ public class ConvertToZTDF extends AbstractToProcessor {
                 //build baseline TDF Config options
                 List<Consumer<TDFConfig>> configurationOptions = new ArrayList<>(Arrays.asList(Config.withKasInformation(kasInfoList.toArray(new Config.KASInfo[0])),
                         Config.withDataAttributes(dataAttributes.toArray(new String[0]))));
+                if (!encryptionEnabled) {
+                    configurationOptions.add(cfg -> cfg.enableEncryption = false);
+                }
                 List<String> nifiAssertionAttributeKeys = flowFile.getAttributes().keySet().stream().filter(x->x.startsWith(TDF_ASSERTION_PREFIX)).toList();
                 for(String nifiAssertionAttributeKey: nifiAssertionAttributeKeys) {
                     getLogger().debug(String.format("Adding assertion for NiFi attribute = %s", nifiAssertionAttributeKey));

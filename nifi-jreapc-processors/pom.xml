@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -7,25 +8,12 @@
         <artifactId>nifi-pom</artifactId>
         <version>0.10.0</version><!-- {x-version-update:nifi:current} -->
     </parent>
-    <artifactId>nifi-tdf-processors</artifactId>
-    <name>nifi-tdf-processors</name>
-    <description>TDF Processors for NiFi</description>
+    <artifactId>nifi-jreapc-processors</artifactId>
+    <name>nifi-jreapc-processors</name>
+    <description>NiFi processor for parsing JREAP-C binary protocol messages</description>
     <packaging>jar</packaging>
+
     <dependencies>
-        <dependency>
-            <groupId>io.opentdf.platform</groupId>
-            <artifactId>sdk</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>nifi-tdf-controller-services-api</artifactId>
-            <version>0.10.0</version><!-- {x-version-update:nifi:current} -->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-ssl-context-service-api</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-api</artifactId>
@@ -35,17 +23,8 @@
             <artifactId>nifi-utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-compress</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -77,43 +56,10 @@
             <version>2.17.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.5.25</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.4.14</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Needed for mockito inline runtime errors -->
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.14.17</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- TlsConfiguration referenced by SSLContextService; not a transitive dep in NiFi 2.x -->
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-security-utils-api</artifactId>
-            <version>${nifi.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- ParseJREAPC needed for end-to-end pipeline tests -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>nifi-jreapc-processors</artifactId>
-            <version>0.10.0</version><!-- {x-version-update:nifi:current} -->
-            <scope>test</scope>
-        </dependency>
     </dependencies>
+
     <build>
         <plugins>
-            <!-- Plugin to create source JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -127,7 +73,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Plugin to create Javadoc JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -145,7 +90,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Plugin to generate checksum files -->
             <plugin>
                 <groupId>net.nicoulaj.maven.plugins</groupId>
                 <artifactId>checksum-maven-plugin</artifactId>
