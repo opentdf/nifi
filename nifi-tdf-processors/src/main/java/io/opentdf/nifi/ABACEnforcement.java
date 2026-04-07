@@ -34,30 +34,27 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Calls the DSP Authorization Service (GetDecisions) to make an ABAC permit/deny
- * decision for the flow file. Routes to "permit" or "deny" relationship based on
- * the decision response.
+ * Calls the OpenTDF Authorization Service (GetDecisions) to make an ABAC permit/deny
+ * decision for a flow file. Routes to "permit" or "deny" based on the response.
  *
- * Designed to work downstream of ParseJREAPC — uses the tdf_attribute flow file
- * attribute set by the parser as the resource attribute FQN list.
+ * The processor reads the {@code tdf_attribute} flow file attribute as a
+ * comma-separated list of OpenTDF resource attribute FQNs and submits them to the
+ * authorization service. Any upstream processor that populates {@code tdf_attribute}
+ * can feed into this processor — it is not tied to any specific protocol or format.
  *
- * NiFi flow:
- *   [Source] → [ParseJREAPC] → [ABACEnforcement] → [permit] → forward
- *                                                  → [deny]   → drop/audit
- *                                                  → [failure] → error handling
+ * Example flow:
+ *   [Source] → [UpdateAttribute tdf_attribute=...] → [ABACEnforcement] → permit/deny/failure
  */
-@CapabilityDescription("Calls the DSP Authorization Service GetDecisions endpoint to make an ABAC " +
-        "permit/deny decision for the flow file. Routes to 'permit' or 'deny' based on the response. " +
-        "Intended for use with JREAP-C and other binary protocol flows that require policy enforcement " +
-        "without TDF encryption.")
-@Tags({"ABAC", "authorization", "DSP", "OpenTDF", "policy", "JREAP-C", "enforcement", "permit", "deny"})
+@CapabilityDescription("Calls the OpenTDF Authorization Service GetDecisions endpoint to make an " +
+        "ABAC permit/deny decision for the flow file. Reads resource attribute FQNs from the " +
+        "'tdf_attribute' flow file attribute and routes to 'permit', 'deny', or 'failure' " +
+        "based on the response. Works with any flow that sets tdf_attribute upstream.")
+@Tags({"ABAC", "authorization", "OpenTDF", "policy", "enforcement", "permit", "deny", "access control"})
 @ReadsAttributes({
     @ReadsAttribute(attribute = "tdf_attribute",
-            description = "Comma-separated resource attribute FQNs used as the resource context " +
-                    "for the authorization decision. Set automatically by ParseJREAPC when " +
-                    "'Classification Attribute Namespace' is configured."),
-    @ReadsAttribute(attribute = "jreapc.classification",
-            description = "Used in the abac.decision_reason attribute on the output flow file."),
+            description = "Comma-separated OpenTDF resource attribute value FQNs used as the " +
+                    "resource context for the authorization decision. Required — flow files " +
+                    "missing this attribute are routed to failure."),
 })
 @WritesAttributes({
     @WritesAttribute(attribute = "abac.decision",

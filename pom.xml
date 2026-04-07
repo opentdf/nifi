@@ -41,6 +41,8 @@
         <module>nifi-tdf-controller-services-api-nar</module>
         <module>nifi-tdf-processors</module>
         <module>nifi-tdf-nar</module>
+        <module>nifi-jreapc-processors</module>
+        <module>nifi-jreapc-nar</module>
     </modules>
     <dependencyManagement>
         <dependencies>
