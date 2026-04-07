@@ -103,6 +103,13 @@
             <version>${nifi.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- ParseJREAPC needed for end-to-end pipeline tests -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>nifi-jreapc-processors</artifactId>
+            <version>0.10.0</version><!-- {x-version-update:nifi:current} -->
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
