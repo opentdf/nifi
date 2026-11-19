@@ -38,7 +38,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@5896cecc08fd8a1fbdfaf517e29b571164b031f7
         with:
-          java-version: "21"
+          # Adoptium SemVer for patched Temurin 21.0.13.1+2 (CVE-2026-114938).
+          java-version: "21.0.13+100000002.0.LTS"
           distribution: "temurin"
           server-id: github
       - name: Cache Maven packages

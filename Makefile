@@ -4,7 +4,8 @@ nifi-image:
 	wget https://raw.githubusercontent.com/apache/nifi/refs/tags/rel/nifi-$(NIFI_VERSION)/nifi-docker/dockerhub/Dockerfile
 	curl -L https://github.com/apache/nifi/archive/refs/tags/rel/nifi-$(NIFI_VERSION).tar.gz -o nifi-$(NIFI_VERSION).tar.gz
 	tar -xzf nifi-$(NIFI_VERSION).tar.gz
-	docker build -t opentdf-nifi:local -f ./nifi-rel-nifi-$(NIFI_VERSION)/nifi-docker/dockerhub/Dockerfile --build-arg IMAGE_TAG=17-jre --build-arg BASE_URL=https://dlcdn.apache.org --build-arg NIFI_VERSION=$(NIFI_VERSION) --build-arg IMAGE_NAME=public.ecr.aws/docker/library/eclipse-temurin ./nifi-rel-nifi-$(NIFI_VERSION)/nifi-docker/dockerhub
+	docker build --pull -t opentdf-nifi:base -f ./nifi-rel-nifi-$(NIFI_VERSION)/nifi-docker/dockerhub/Dockerfile --build-arg IMAGE_TAG=17-jre --build-arg BASE_URL=https://dlcdn.apache.org --build-arg NIFI_VERSION=$(NIFI_VERSION) --build-arg IMAGE_NAME=public.ecr.aws/docker/library/eclipse-temurin ./nifi-rel-nifi-$(NIFI_VERSION)/nifi-docker/dockerhub
+	docker build -t opentdf-nifi:local -f deploy/Dockerfile deploy
 
 
 .PHONY: compose-package
