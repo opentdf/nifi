@@ -2,4 +2,5 @@
 /**/target/
 /nifi-rel-nifi-*/
 Dockerfile*
-nifi-**.tar.gz 
+!/deploy/Dockerfile
+nifi-**.tar.gz
